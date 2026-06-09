@@ -1,6 +1,10 @@
 # LearnOptions
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-antaresgg.github.io%2FLearnOptions-7c6df2?logo=github)](https://antaresgg.github.io/LearnOptions/)
+
 Interactive Chinese options-learning site covering core option mechanics and pricing concepts.
+
+**Live site:** https://antaresgg.github.io/LearnOptions/
 
 ## Contents
 
@@ -17,6 +21,7 @@ This repository is a static HTML site. It does not require a build step or packa
 - `07-parity.html` - put-call parity
 - `08-strategies.html` - basic option strategies
 - `strategy-system.html` - McMillan strategy system: four-category framework, market×IV selection matrix, and a 20+ strategy gallery with live payoffs
+- `strategy-builder.html` - standalone single-screen strategy builder: matrix selection + gallery presets with inline editable / add-remove legs and live Black-Scholes payoff
 - `delta.html` - Delta standalone interactive lesson
 - `gamma.html` - Gamma standalone interactive lesson
 - `theta.html` - Theta standalone interactive lesson
