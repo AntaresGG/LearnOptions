@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>06 · 损益图 | 期权学堂</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ===== 期权学堂 · 共享样式  Options Academy shared styles ===== */
+:root{
+  --bg:#0a0e16;
+  --bg2:#0d121d;
+  --surface:#131a27;
+  --surface2:#1a2333;
+  --border:#27303f;
+  --border-soft:#1e2735;
+  --text:#e8ecf3;
+  --muted:#8b95a8;
+  --faint:#5a647a;
+  --gold:#e0b15e;
+  --gold-dim:#a8854a;
+  --call:#5aa2ff;     /* Call 认购 */
+  --put:#ffb454;      /* Put  认沽 */
+  --up:#ff5b6e;       /* 盈利 / 上涨  (红涨) */
+  --down:#22c98b;     /* 亏损 / 下跌  (绿跌) */
+  --shadow:0 18px 50px -20px rgba(0,0,0,.75);
+  --mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+  --serif:"Spectral",Georgia,"Songti SC",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Hiragino Sans GB",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  min-height:100vh;
+  background-image:
+    linear-gradient(rgba(224,177,94,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(224,177,94,.025) 1px,transparent 1px),
+    radial-gradient(ellipse 80% 60% at 50% -10%,rgba(90,162,255,.08),transparent 60%);
+  background-size:42px 42px,42px 42px,100% 100%;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+.mono{font-family:var(--mono)}
+.up{color:var(--up)} .down{color:var(--down)}
+.call-c{color:var(--call)} .put-c{color:var(--put)}
+
+/* ---- layout ---- */
+.wrap{max-width:1360px;margin:0 auto;padding:0 12px 78px}
+.topbar{
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(14px);
+  background:rgba(10,14,22,.82);
+  border-bottom:1px solid var(--border-soft);
+}
+.topbar-in{max-width:1360px;margin:0 auto;padding:12px 12px;display:flex;align-items:center;gap:14px}
+.brand{font-family:var(--serif);font-weight:700;font-size:16px;letter-spacing:.5px;color:var(--gold);white-space:nowrap}
+.brand span{color:var(--faint);font-weight:400;font-size:12px;margin-left:6px;letter-spacing:0}
+.topbar-spacer{flex:1}
+.tb-link{font-size:13px;color:var(--muted);padding:6px 11px;border:1px solid var(--border);border-radius:8px;transition:.18s;white-space:nowrap}
+.tb-link:hover{color:var(--text);border-color:var(--gold-dim)}
+
+/* ---- hero ---- */
+header.hero{padding:46px 0 18px;border-bottom:1px solid var(--border-soft);margin-bottom:30px;position:relative}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:3px;color:var(--gold-dim);text-transform:uppercase;margin-bottom:14px}
+h1.title{font-family:var(--serif);font-size:clamp(30px,7vw,46px);line-height:1.08;font-weight:700;letter-spacing:-.5px}
+h1.title .en{display:block;font-size:clamp(15px,3.5vw,20px);color:var(--muted);font-weight:400;font-style:italic;margin-top:8px;letter-spacing:.3px}
+.lede{color:var(--muted);font-size:16px;margin-top:18px;max-width:640px}
+
+/* ---- sections / cards ---- */
+section{margin:34px 0}
+.sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+.sec-num{font-family:var(--mono);font-size:13px;color:var(--gold);border:1px solid var(--gold-dim);border-radius:6px;padding:2px 8px;flex:none}
+h2{font-family:var(--serif);font-size:24px;font-weight:600;letter-spacing:-.2px}
+h3{font-family:var(--serif);font-size:18px;font-weight:600;margin:18px 0 8px}
+p.body{color:#c6cdda;margin:10px 0}
+p.body b{color:var(--text)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
+.card+.card{margin-top:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+
+/* ---- callout / note ---- */
+.note{border-left:3px solid var(--gold);background:linear-gradient(90deg,rgba(224,177,94,.08),transparent);padding:12px 16px;border-radius:0 10px 10px 0;color:#cfd6e3;font-size:14.5px;margin:14px 0}
+.note b{color:var(--gold)}
+.note.mnemonic{border-left-color:#ff8a1f;background:linear-gradient(90deg,rgba(255,138,31,.16),rgba(255,138,31,.035),transparent);color:#ffb35c;font-size:18px;font-weight:700;letter-spacing:.2px}
+.note.mnemonic b{color:#ff8a1f}
+.kbd{font-family:var(--mono);background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:.88em;color:var(--gold)}
+
+/* ---- formula ---- */
+.formula{font-family:var(--mono);background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;font-size:15px;color:var(--text);overflow-x:auto;text-align:center;letter-spacing:.3px}
+.formula .hl{color:var(--gold)}
+
+/* ---- controls ---- */
+.controls{display:flex;flex-direction:column;gap:16px}
+.ctrl label{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:var(--muted);margin-bottom:7px}
+.ctrl label .val{font-family:var(--mono);color:var(--gold);font-size:15px;font-weight:500}
+.ctrl label .nm{color:var(--text)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:5px;background:var(--surface2);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;border-radius:50%;background:var(--gold);border:3px solid var(--bg);box-shadow:0 0 0 1px var(--gold-dim);cursor:pointer;transition:.12s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.15)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--gold);border:3px solid var(--bg);cursor:pointer}
+.seg{display:inline-flex;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px}
+.seg button{font-family:var(--sans);background:none;border:none;color:var(--muted);padding:7px 15px;border-radius:7px;font-size:13.5px;cursor:pointer;transition:.15s;white-space:nowrap}
+.seg button.active{background:var(--surface2);color:var(--text);box-shadow:0 1px 0 rgba(255,255,255,.04)}
+.seg button.active.call{color:var(--call)} .seg button.active.put{color:var(--put)}
+
+/* ---- readout chips ---- */
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin-top:6px}
+.chip{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:11px 13px}
+.chip .k{font-size:11.5px;color:var(--faint);letter-spacing:.5px;font-family:var(--mono)}
+.chip .v{font-family:var(--mono);font-size:21px;font-weight:600;margin-top:3px;line-height:1.1}
+.chip .u{font-size:11px;color:var(--muted);margin-left:3px}
+
+/* ---- chart ---- */
+.chart-wrap{position:relative;width:100%}
+canvas.chart{width:100%;display:block;border-radius:12px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.legend .dot{width:9px;height:9px;border-radius:50%}
+
+/* ---- quiz ---- */
+.quiz{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px}
+.q{margin-bottom:8px}
+.q+.q{margin-top:22px;padding-top:22px;border-top:1px dashed var(--border)}
+.q .prompt{font-size:15.5px;margin-bottom:13px;color:var(--text)}
+.q .prompt .n{font-family:var(--mono);color:var(--gold);margin-right:8px}
+.opt{display:block;width:100%;text-align:left;background:var(--bg2);border:1px solid var(--border);color:#cdd4e1;padding:12px 15px;border-radius:10px;font-size:14.5px;cursor:pointer;transition:.15s;margin-bottom:9px;font-family:var(--sans)}
+.opt:hover{border-color:var(--gold-dim)}
+.opt.correct{border-color:var(--down);background:rgba(34,201,139,.12);color:#bff0d9}
+.opt.wrong{border-color:var(--up);background:rgba(255,91,110,.1);color:#ffc7ce}
+.opt.disabled{cursor:default;opacity:.55}
+.opt .mk{float:right;font-weight:700}
+.explain{font-size:13.5px;color:var(--muted);background:var(--bg2);border-radius:9px;padding:11px 14px;margin-top:4px;border-left:2px solid var(--gold-dim);display:none}
+.explain.show{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
+
+/* ---- drag classify ---- */
+.dragpool{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;min-height:20px}
+.dcard{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;cursor:grab;user-select:none;touch-action:none;transition:box-shadow .15s,transform .05s}
+.dcard:active{cursor:grabbing}
+.dcard.dragging{box-shadow:0 10px 26px -6px rgba(0,0,0,.6);opacity:.92}
+.dcard.placed{cursor:default}
+.dcard.sel{outline:2px solid var(--gold);outline-offset:1px}
+.buckets{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:560px){.buckets{grid-template-columns:1fr}}
+.bucket{border:1.5px dashed var(--border);border-radius:13px;padding:14px;min-height:120px;transition:.15s}
+.bucket.over{border-color:var(--gold);background:rgba(224,177,94,.06)}
+.bucket .bt{font-family:var(--mono);font-size:13px;letter-spacing:1px;color:var(--gold);margin-bottom:4px}
+.bucket .bd{font-size:12px;color:var(--faint);margin-bottom:12px}
+.bucket .drop{display:flex;flex-direction:column;gap:8px;min-height:30px}
+.dcard.ok{border-color:var(--down)} .dcard.no{border-color:var(--up)}
+.btn{background:var(--gold);color:#1a130a;border:none;font-weight:600;font-size:14px;padding:10px 20px;border-radius:9px;cursor:pointer;font-family:var(--sans);transition:.15s}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:none;border:1px solid var(--border);color:var(--muted)}
+.btn.ghost:hover{color:var(--text);border-color:var(--gold-dim)}
+.drag-actions{display:flex;gap:10px;margin-top:16px;align-items:center}
+.drag-score{font-family:var(--mono);font-size:14px;color:var(--muted)}
+
+/* ---- table ---- */
+table.t{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
+table.t th,table.t td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+table.t th{color:var(--gold-dim);font-weight:600;font-family:var(--mono);font-size:12px;letter-spacing:.5px;text-transform:uppercase}
+table.t td{color:#c6cdda}
+table.t tr:last-child td{border-bottom:none}
+.mono-pos{color:var(--up)} .mono-neg{color:var(--down)}
+
+/* ---- prevnext ---- */
+.prevnext{display:flex;justify-content:space-between;gap:12px;margin-top:46px;padding-top:24px;border-top:1px solid var(--border-soft)}
+.pn{flex:1;border:1px solid var(--border);border-radius:13px;padding:15px 18px;transition:.18s;min-width:0}
+.pn:hover{border-color:var(--gold-dim);background:var(--surface)}
+.pn .d{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:1px}
+.pn .t{font-family:var(--serif);font-size:16px;margin-top:4px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pn.next{text-align:right}
+.pn.disabled{opacity:.32;pointer-events:none}
+footer.foot{text-align:center;color:var(--faint);font-size:12.5px;margin-top:50px;font-family:var(--mono)}
+
+/* ---- index hub ---- */
+.cardgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:640px){.cardgrid{grid-template-columns:1fr}}
+.topic{display:block;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;transition:.2s;position:relative;overflow:hidden}
+.topic::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,rgba(224,177,94,.1),transparent 55%);opacity:0;transition:.2s}
+.topic:hover{border-color:var(--gold-dim);transform:translateY(-3px)}
+.topic:hover::before{opacity:1}
+.topic .tn{font-family:var(--mono);font-size:12px;color:var(--gold)}
+.topic .th{font-family:var(--serif);font-size:19px;margin:8px 0 5px;font-weight:600}
+.topic .te{font-size:12px;color:var(--faint);font-style:italic;margin-bottom:9px}
+.topic .tp{font-size:13.5px;color:var(--muted);line-height:1.5}
+.topic .tags{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-family:var(--mono);font-size:10.5px;color:var(--muted);border:1px solid var(--border);border-radius:5px;padding:2px 7px}
+
+</style>
+</head>
+<body>
+<div class="topbar"><div class="topbar-in">
+  <a class="brand" href="index.html">期权学堂<span>Options Academy</span></a>
+  <div class="topbar-spacer"></div>
+  <a class="tb-link" href="index.html">← 目录</a>
+</div></div>
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">MODULE 06</div>
+  <h1 class="title">损益图 Payoff<span class="en">Payoff Diagrams</span></h1>
+  <p class="lede">损益图把任意期权组合在到期日的盈亏画成一条线。学会读图，再亲手搭建多腿组合，直观看到风险收益的形状。</p>
+</header>
+<section>
+  <div class="sec-head"><span class="sec-num">概念</span><h2>如何读损益图</h2></div>
+  <div class="card">
+    <p class="body" style="margin-top:0">损益图横轴是<b>到期标的价 S_T</b>,纵轴是<b>组合的净盈亏</b>(已含权利金)。读图三件套:</p>
+    <table class="t">
+      <tr><th>看什么</th><th>含义</th></tr>
+      <tr><td>线穿过 0 的位置</td><td><b>盈亏平衡点 Breakeven</b></td></tr>
+      <tr><td>线的最高/最低水平段</td><td><b>最大盈利 / 最大亏损</b></td></tr>
+      <tr><td>线的斜率</td><td>对标的方向的暴露(≈ 净 Delta)</td></tr>
+    </table>
+    <div class="note">折线的每个「拐点」都对应一个行权价 K。向上倾斜=看涨暴露,向下倾斜=看跌暴露,水平=已被对冲或封顶。</div>
+    <div class="note mnemonic"><b>口诀：</b>斜率看方向，拐点看 Strike，过零看 Breakeven，水平看封顶。</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">交互</span><h2>多腿组合搭建器</h2></div>
+  <div class="card">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px">快速载入示例</div>
+    <div class="seg" id="presets" style="flex-wrap:wrap;margin-bottom:16px">
+      <button data-v="lc">Long Call</button>
+      <button data-v="bcs">Bull Call Spread</button>
+      <button data-v="strad">Long Straddle</button>
+      <button data-v="cc">Covered Call</button>
+      <button data-v="clear">清空</button>
+    </div>
+    <div id="legs"></div>
+    <button class="btn ghost" id="addLeg" style="margin:10px 0 4px">＋ 添加一腿</button>
+    <div class="readout" style="margin:18px 0">
+      <div class="chip"><div class="k">净权利金 Net Premium</div><div class="v mono" id="oNet">–</div></div>
+      <div class="chip"><div class="k">盈亏平衡 Breakeven</div><div class="v mono" id="oBE" style="font-size:16px">–</div></div>
+      <div class="chip"><div class="k">最大盈利</div><div class="v mono" style="color:var(--up)" id="oMax">–</div></div>
+      <div class="chip"><div class="k">最大亏损</div><div class="v mono" style="color:var(--down)" id="oMin">–</div></div>
+    </div>
+    <div class="chart-wrap"><canvas class="chart" id="cv"></canvas></div>
+    <div class="legend"><span><i style="background:var(--gold)"></i>组合到期损益</span><span><i style="background:var(--muted)"></i>盈亏平衡线</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">巩固</span><h2>小测验</h2></div>
+  <div class="quiz" id="quiz"></div>
+</section>
+<div class="prevnext"><a class="pn prev" href="05-volatility.html"><div class="d">← 上一节 · 05</div><div class="t">隐含波动率 vs 历史波动率</div></a><a class="pn next" href="07-parity.html"><div class="d">下一节 · 07 →</div><div class="t">认购认沽平价</div></a></div><footer class="foot">期权学堂 · 仅用于教育演示，所有定价基于 Black-Scholes 理想模型，不构成投资建议</footer>
+</div>
+<script>
+/* ===== 期权学堂 · 共享脚本  Options Academy lib ===== */
+(function(){
+'use strict';
+const A = window.OA = {};
+
+/* ---------- math ---------- */
+A.ndf = x => Math.exp(-x*x/2)/Math.sqrt(2*Math.PI);
+A.ncdf = function(x){
+  const a1=.254829592,a2=-.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=.3275911;
+  const s = x<0?-1:1; x = Math.abs(x)/Math.SQRT2;
+  const t = 1/(1+p*x);
+  const y = 1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);
+  return .5*(1+s*y);
+};
+/* Black-Scholes (continuous), T in years, r & sig & q decimals.
+   Returns price + Greeks. theta per day, vega/rho per 1% (per point). */
+A.bs = function(type,S,K,T,r,sig,q){
+  q = q||0;
+  if(T<=0 || sig<=0){
+    const intr = type==='call'?Math.max(S-K,0):Math.max(K-S,0);
+    const dl = type==='call'?(S>K?1:0):(S<K?-1:0);
+    return {price:intr,delta:dl,gamma:0,theta:0,vega:0,rho:0,d1:0,d2:0};
+  }
+  const sq=Math.sqrt(T), eq=Math.exp(-q*T), er=Math.exp(-r*T);
+  const d1=(Math.log(S/K)+(r-q+sig*sig/2)*T)/(sig*sq), d2=d1-sig*sq;
+  const N1=A.ncdf(d1),N2=A.ncdf(d2),n1=A.ndf(d1);
+  let price,delta,rho,theta;
+  if(type==='call'){
+    price=S*eq*N1-K*er*N2;
+    delta=eq*N1;
+    rho=K*T*er*N2/100;
+    theta=(-S*eq*n1*sig/(2*sq)-r*K*er*N2+q*S*eq*N1)/365;
+  }else{
+    price=K*er*A.ncdf(-d2)-S*eq*A.ncdf(-d1);
+    delta=-eq*A.ncdf(-d1);
+    rho=-K*T*er*A.ncdf(-d2)/100;
+    theta=(-S*eq*n1*sig/(2*sq)+r*K*er*A.ncdf(-d2)-q*S*eq*A.ncdf(-d1))/365;
+  }
+  const gamma=eq*n1/(S*sig*sq);
+  const vega=S*eq*n1*sq/100;
+  return {price,delta,gamma,theta,vega,rho,d1,d2};
+};
+/* implied vol via bisection */
+A.impliedVol = function(type,S,K,T,r,mkt,q){
+  let lo=.0001, hi=5;
+  if(mkt < (type==='call'?Math.max(S-K,0):Math.max(K-S,0))-1e-6) return NaN;
+  for(let i=0;i<80;i++){
+    const mid=(lo+hi)/2;
+    const p=A.bs(type,S,K,T,r,mid,q).price;
+    if(Math.abs(p-mkt)<1e-6) return mid;
+    if(p>mkt) hi=mid; else lo=mid;
+  }
+  return (lo+hi)/2;
+};
+A.fmt = (x,d)=> (x==null||isNaN(x))?'–':x.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+/* ---------- chart (canvas line chart) ---------- */
+/* opts: {xmin,xmax,ymin?,ymax?, series:[{points:[[x,y]],color,width?,dash?,fill?}],
+   xlabel?,ylabel?, vlines:[{x,color,label?,dash?}], hlines:[{y,color,dash?}],
+   xticks?,yticks?, padFrac?, baseline?(y of profit zero)} */
+A.chart = function(canvas,opts){
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const cssW=canvas.clientWidth||620;
+  const cssH=opts.height||320;
+  canvas.style.height=cssH+'px';
+  canvas.width=cssW*dpr; canvas.height=cssH*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,cssW,cssH);
+  const ml=opts.ylabel?54:44, mr=16, mt=14, mb=opts.xlabel?40:30;
+  const W=cssW-ml-mr, H=cssH-mt-mb;
+  // y-range
+  let ymin=opts.ymin, ymax=opts.ymax;
+  if(ymin==null||ymax==null){
+    let lo=Infinity,hi=-Infinity;
+    opts.series.forEach(s=>s.points.forEach(p=>{if(isFinite(p[1])){lo=Math.min(lo,p[1]);hi=Math.max(hi,p[1]);}}));
+    if(!isFinite(lo)){lo=-1;hi=1;}
+    if(opts.baseline!=null){lo=Math.min(lo,opts.baseline);hi=Math.max(hi,opts.baseline);}
+    const pad=(hi-lo)*(opts.padFrac||.12)||1;
+    ymin=ymin==null?lo-pad:ymin; ymax=ymax==null?hi+pad:ymax;
+    if(ymin===ymax){ymin-=1;ymax+=1;}
+  }
+  const xmin=opts.xmin,xmax=opts.xmax;
+  const X=x=>ml+(x-xmin)/(xmax-xmin)*W;
+  const Y=y=>mt+H-(y-ymin)/(ymax-ymin)*H;
+  // grid + ticks
+  ctx.font='11px '+getComputedStyle(document.body).getPropertyValue('--mono');
+  const cs=getComputedStyle(document.documentElement);
+  const cBorder=cs.getPropertyValue('--border').trim();
+  const cMuted=cs.getPropertyValue('--muted').trim();
+  const cFaint=cs.getPropertyValue('--faint').trim();
+  const nx=opts.xticks||6, ny=opts.yticks||5;
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for(let i=0;i<=nx;i++){
+    const xv=xmin+(xmax-xmin)*i/nx, px=X(xv);
+    ctx.strokeStyle=cBorder; ctx.globalAlpha=.4; ctx.beginPath();
+    ctx.moveTo(px,mt); ctx.lineTo(px,mt+H); ctx.stroke(); ctx.globalAlpha=1;
+    ctx.fillStyle=cFaint; ctx.fillText(A.fmt(xv,xv%1===0?0:(Math.abs(xv)<10?1:0)),px,mt+H+7);
+  }
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(let i=0;i<=ny;i++){
+    const yv=ymin+(ymax-ymin)*i/ny, py=Y(yv);
+    ctx.strokeStyle=cBorder; ctx.globalAlpha=.4; ctx.beginPath();
+    ctx.moveTo(ml,py); ctx.lineTo(ml+W,py); ctx.stroke(); ctx.globalAlpha=1;
+    ctx.fillStyle=cFaint; ctx.fillText(A.fmt(yv,Math.abs(ymax-ymin)<5?2:(Math.abs(ymax-ymin)<50?1:0)),ml-7,py);
+  }
+  // zero baseline (profit) emphasised
+  if(opts.baseline!=null && opts.baseline>=ymin && opts.baseline<=ymax){
+    ctx.strokeStyle=cMuted; ctx.globalAlpha=.6; ctx.lineWidth=1; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(ml,Y(opts.baseline)); ctx.lineTo(ml+W,Y(opts.baseline)); ctx.stroke(); ctx.globalAlpha=1;
+  }
+  // hlines
+  (opts.hlines||[]).forEach(h=>{
+    if(h.y<ymin||h.y>ymax)return;
+    ctx.strokeStyle=h.color; ctx.lineWidth=1; ctx.setLineDash(h.dash||[5,4]);
+    ctx.beginPath();ctx.moveTo(ml,Y(h.y));ctx.lineTo(ml+W,Y(h.y));ctx.stroke();ctx.setLineDash([]);
+  });
+  // clip
+  ctx.save(); ctx.beginPath(); ctx.rect(ml,mt,W,H); ctx.clip();
+  // fills
+  opts.series.forEach(s=>{
+    if(!s.fill)return;
+    ctx.beginPath();
+    let started=false;
+    s.points.forEach(p=>{if(!isFinite(p[1]))return; if(!started){ctx.moveTo(X(p[0]),Y(p[1]));started=true;}else ctx.lineTo(X(p[0]),Y(p[1]));});
+    const last=s.points[s.points.length-1],first=s.points[0];
+    const by=opts.baseline!=null?Y(opts.baseline):mt+H;
+    ctx.lineTo(X(last[0]),by); ctx.lineTo(X(first[0]),by); ctx.closePath();
+    ctx.fillStyle=s.fill; ctx.fill();
+  });
+  // lines
+  opts.series.forEach(s=>{
+    ctx.strokeStyle=s.color; ctx.lineWidth=s.width||2.4; ctx.setLineDash(s.dash||[]);
+    ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.beginPath(); let started=false;
+    s.points.forEach(p=>{if(!isFinite(p[1]))return; const px=X(p[0]),py=Y(p[1]); if(!started){ctx.moveTo(px,py);started=true;}else ctx.lineTo(px,py);});
+    ctx.stroke(); ctx.setLineDash([]);
+  });
+  // vlines
+  (opts.vlines||[]).forEach(v=>{
+    if(v.x<xmin||v.x>xmax)return;
+    ctx.strokeStyle=v.color; ctx.lineWidth=1.4; ctx.setLineDash(v.dash||[4,4]);
+    ctx.beginPath();ctx.moveTo(X(v.x),mt);ctx.lineTo(X(v.x),mt+H);ctx.stroke();ctx.setLineDash([]);
+    if(v.label){ctx.restore();ctx.save();ctx.fillStyle=v.color;ctx.font='11px '+cs.getPropertyValue('--mono');ctx.textAlign='center';ctx.textBaseline='bottom';
+      const tx=Math.min(Math.max(X(v.x),ml+22),ml+W-22);ctx.fillText(v.label,tx,mt+11);ctx.beginPath();ctx.rect(ml,mt,W,H);ctx.clip();}
+  });
+  // dots
+  opts.series.forEach(s=>{(s.dots||[]).forEach(d=>{ctx.fillStyle=s.color;ctx.beginPath();ctx.arc(X(d[0]),Y(d[1]),3.5,0,7);ctx.fill();});});
+  ctx.restore();
+  // axis labels
+  if(opts.xlabel){ctx.fillStyle=cMuted;ctx.font='12px '+cs.getPropertyValue('--sans');ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(opts.xlabel,ml+W/2,cssH-2);}
+  if(opts.ylabel){ctx.save();ctx.translate(12,mt+H/2);ctx.rotate(-Math.PI/2);ctx.fillStyle=cMuted;ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText(opts.ylabel,0,0);ctx.restore();}
+};
+/* build evenly sampled points for fn over [a,b] */
+A.sample = function(a,b,n,fn){const pts=[];for(let i=0;i<=n;i++){const x=a+(b-a)*i/n;pts.push([x,fn(x)]);}return pts;};
+
+/* ---------- slider helper ---------- */
+/* id of <input range>, valEl id, formatter, onchange */
+A.slider = function(rangeId,valId,fmt,onInput){
+  const r=document.getElementById(rangeId), v=valId?document.getElementById(valId):null;
+  const upd=()=>{ if(v) v.textContent=fmt(parseFloat(r.value)); onInput(parseFloat(r.value)); };
+  r.addEventListener('input',upd); upd(); return r;
+};
+
+/* ---------- segmented control ---------- */
+A.seg = function(containerId,onChange){
+  const c=document.getElementById(containerId);
+  c.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+    c.querySelectorAll('button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); onChange(b.dataset.v,b);
+  }));
+};
+
+/* ---------- quiz ---------- */
+A.quiz = function(containerId,questions){
+  const c=document.getElementById(containerId);
+  questions.forEach((q,qi)=>{
+    const wrap=document.createElement('div'); wrap.className='q';
+    const p=document.createElement('div'); p.className='prompt';
+    p.innerHTML='<span class="n">Q'+(qi+1)+'</span>'+q.q; wrap.appendChild(p);
+    const ex=document.createElement('div'); ex.className='explain';
+    q.opts.forEach((o,oi)=>{
+      const btn=document.createElement('button'); btn.className='opt'; btn.innerHTML=o;
+      btn.addEventListener('click',()=>{
+        if(wrap.dataset.done)return; wrap.dataset.done='1';
+        wrap.querySelectorAll('.opt').forEach(b=>b.classList.add('disabled'));
+        if(oi===q.a){btn.classList.add('correct');btn.innerHTML=o+'<span class="mk">✓</span>';}
+        else{btn.classList.add('wrong');btn.innerHTML=o+'<span class="mk">✗</span>';
+          const cor=wrap.querySelectorAll('.opt')[q.a];cor.classList.add('correct');cor.innerHTML=q.opts[q.a]+'<span class="mk">✓</span>';}
+        ex.classList.add('show');
+      });
+      wrap.appendChild(btn);
+    });
+    ex.innerHTML='<b style="color:var(--gold)">解析 · </b>'+q.e; wrap.appendChild(ex);
+    c.appendChild(wrap);
+  });
+};
+
+/* ---------- drag classify (pointer based, mobile friendly + tap fallback) ---------- */
+/* items:[{id,label,bucket}], buckets:[{id,title,desc}] */
+A.classify = function(opts){
+  const root=document.getElementById(opts.root);
+  const pool=root.querySelector('.dragpool');
+  const drops={};
+  let selected=null;
+  root.querySelectorAll('.bucket').forEach(b=>{ drops[b.dataset.b]=b.querySelector('.drop'); });
+  const cards={};
+  opts.items.forEach(it=>{
+    const d=document.createElement('div'); d.className='dcard'; d.textContent=it.label; d.dataset.id=it.id; d.dataset.b=it.bucket;
+    cards[it.id]=d; pool.appendChild(d);
+    enableDrag(d);
+  });
+  function place(card,dropEl){ dropEl.appendChild(card); }
+  // tap fallback
+  function enableDrag(card){
+    let drag=null;
+    card.addEventListener('pointerdown',e=>{
+      if(card.classList.contains('locked'))return;
+      const r=card.getBoundingClientRect();
+      drag={sx:e.clientX,sy:e.clientY,ox:e.clientX-r.left,oy:e.clientY-r.top,moved:false,w:r.width,h:r.height};
+      card.setPointerCapture(e.pointerId);
+    });
+    card.addEventListener('pointermove',e=>{
+      if(!drag)return;
+      if(!drag.moved && Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)<5)return;
+      if(!drag.moved){ drag.moved=true; card.classList.add('dragging');
+        card.style.position='fixed';card.style.zIndex=999;card.style.width=drag.w+'px';card.style.pointerEvents='none';}
+      card.style.left=(e.clientX-drag.ox)+'px'; card.style.top=(e.clientY-drag.oy)+'px';
+      const el=document.elementFromPoint(e.clientX,e.clientY);
+      root.querySelectorAll('.bucket').forEach(b=>b.classList.remove('over'));
+      const bk=el&&el.closest('.bucket'); if(bk)bk.classList.add('over');
+    });
+    card.addEventListener('pointerup',e=>{
+      if(!drag)return;
+      if(drag.moved){
+        const el=document.elementFromPoint(e.clientX,e.clientY);
+        const bk=el&&el.closest('.bucket');
+        card.classList.remove('dragging');
+        card.style.position='';card.style.left='';card.style.top='';card.style.zIndex='';card.style.width='';card.style.pointerEvents='';
+        root.querySelectorAll('.bucket').forEach(b=>b.classList.remove('over'));
+        if(bk) place(card,drops[bk.dataset.b]); else pool.appendChild(card);
+      }else{ // tap
+        if(selected===card){card.classList.remove('sel');selected=null;}
+        else{ if(selected)selected.classList.remove('sel'); selected=card; card.classList.add('sel'); }
+      }
+      drag=null;
+    });
+  }
+  // tap a bucket to place selected
+  root.querySelectorAll('.bucket').forEach(b=>{
+    b.addEventListener('click',()=>{ if(selected){ place(selected,drops[b.dataset.b]); selected.classList.remove('sel'); selected=null; } });
+  });
+  // check
+  root.querySelector('[data-act=check]').addEventListener('click',()=>{
+    let right=0;
+    Object.keys(cards).forEach(id=>{
+      const card=cards[id]; const parentBucket=card.closest('.bucket');
+      card.classList.remove('ok','no');
+      if(parentBucket && parentBucket.dataset.b===card.dataset.b){card.classList.add('ok');right++;}
+      else if(parentBucket){card.classList.add('no');}
+    });
+    root.querySelector('.drag-score').textContent='得分  '+right+' / '+opts.items.length;
+  });
+  root.querySelector('[data-act=reset]').addEventListener('click',()=>{
+    Object.values(cards).forEach(c=>{c.classList.remove('ok','no','sel');pool.appendChild(c);});
+    selected=null; root.querySelector('.drag-score').textContent='';
+  });
+};
+
+/* redraw registered charts on resize (debounced) */
+A._redraws=[];
+A.onResize = fn=>{A._redraws.push(fn);};
+let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>A._redraws.forEach(f=>f()),120);});
+})();
+
+</script>
+<script>
+
+const O=window.OA; let legs=[];
+const cv=document.getElementById('cv'), legsEl=document.getElementById('legs');
+const presets={
+  lc:[{kind:'call',dir:1,K:100,prem:5}],
+  bcs:[{kind:'call',dir:1,K:100,prem:6},{kind:'call',dir:-1,K:115,prem:2}],
+  strad:[{kind:'call',dir:1,K:100,prem:6},{kind:'put',dir:1,K:100,prem:5}],
+  cc:[{kind:'stock',dir:1,K:0,prem:100},{kind:'call',dir:-1,K:110,prem:4}],
+};
+function legPayoff(leg,S){
+  if(leg.kind==='stock') return leg.dir*(S-leg.prem);
+  const intr=leg.kind==='call'?Math.max(S-leg.K,0):Math.max(leg.K-S,0);
+  return leg.dir*(intr-leg.prem);
+}
+function total(S){return legs.reduce((a,l)=>a+legPayoff(l,S),0);}
+function renderLegs(){
+  legsEl.innerHTML='';
+  legs.forEach((leg,i)=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px';
+    const mk=(opts,val,cb)=>{const s=document.createElement('select');s.style.cssText='background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:6px 8px;font-family:var(--sans);font-size:13px';opts.forEach(o=>{const op=document.createElement('option');op.value=o[0];op.textContent=o[1];if(o[0]==val)op.selected=true;s.appendChild(op);});s.onchange=e=>cb(e.target.value);return s;};
+    row.appendChild(mk([['1','Long 买'],['-1','Short 卖']],String(leg.dir),v=>{leg.dir=parseInt(v);render();}));
+    row.appendChild(mk([['call','Call'],['put','Put'],['stock','Stock']],leg.kind,v=>{leg.kind=v;render();}));
+    if(leg.kind!=='stock'){
+      const kw=document.createElement('span');kw.style.cssText='font-size:12px;color:var(--muted)';kw.textContent='K';row.appendChild(kw);
+      const ki=document.createElement('input');ki.type='number';ki.value=leg.K;ki.style.cssText='width:62px;background:var(--surface2);color:var(--gold);border:1px solid var(--border);border-radius:7px;padding:6px;font-family:var(--mono);font-size:13px';ki.oninput=e=>{leg.K=parseFloat(e.target.value)||0;render();};row.appendChild(ki);
+    }
+    const pw=document.createElement('span');pw.style.cssText='font-size:12px;color:var(--muted)';pw.textContent=leg.kind==='stock'?'成本':'权利金';row.appendChild(pw);
+    const pi=document.createElement('input');pi.type='number';pi.step='0.5';pi.value=leg.prem;pi.style.cssText='width:62px;background:var(--surface2);color:var(--gold);border:1px solid var(--border);border-radius:7px;padding:6px;font-family:var(--mono);font-size:13px';pi.oninput=e=>{leg.prem=parseFloat(e.target.value)||0;render();};row.appendChild(pi);
+    const del=document.createElement('button');del.textContent='✕';del.className='btn ghost';del.style.cssText='padding:5px 10px;margin-left:auto';del.onclick=()=>{legs.splice(i,1);render();};row.appendChild(del);
+    legsEl.appendChild(row);
+  });
+  if(!legs.length)legsEl.innerHTML='<div style="color:var(--faint);font-size:13px;padding:8px">暂无腿,点击「添加一腿」或载入上方示例。</div>';
+}
+function findBreakevens(){
+  const bes=[],lo=20,hi=200,step=0.25; let prev=total(lo),prevS=lo;
+  for(let S=lo+step;S<=hi;S+=step){const cur=total(S);if((prev<0&&cur>=0)||(prev>0&&cur<=0)){const z=prevS+(0-prev)/(cur-prev)*step;bes.push(z);}prev=cur;prevS=S;}
+  return bes;
+}
+function render(){
+  renderLegs();
+  if(!legs.length){O.chart(cv,{height:320,xmin:60,xmax:140,baseline:0,series:[{points:[[60,0],[140,0]],color:'#5a647a'}]});['oNet','oBE','oMax','oMin'].forEach(id=>document.getElementById(id).textContent='–');return;}
+  const Ks=legs.filter(l=>l.kind!=='stock').map(l=>l.K);
+  const center=Ks.length?Ks.reduce((a,b)=>a+b,0)/Ks.length:100;
+  const a=Math.max(0,center-55),b=center+55;
+  const pts=O.sample(a,b,200,total);
+  const net=legs.reduce((s,l)=>s+ (l.kind==='stock'? l.dir*(-l.prem):(-l.dir*l.prem)),0);
+  const ys=pts.map(p=>p[1]);
+  document.getElementById('oNet').textContent=(net>=0?'+':'')+O.fmt(net,2);
+  const mx=Math.max(...ys),mn=Math.min(...ys);
+  document.getElementById('oMax').textContent=(mx>=ys[ys.length-1]*0.99&&pts[ys.indexOf(mx)][0]>b-1)?'∞ (无上限)':'+'+O.fmt(mx,2);
+  document.getElementById('oMin').textContent=(mn<=ys[0]*0.99&&pts[ys.indexOf(mn)][0]<a+1)?'-∞':O.fmt(mn,2);
+  const bes=findBreakevens();
+  document.getElementById('oBE').textContent=bes.length?bes.map(x=>O.fmt(x,1)).join(', '):'无';
+  O.chart(cv,{height:340,xmin:a,xmax:b,baseline:0,xlabel:'到期标的价 S_T',ylabel:'组合损益',
+    series:[{points:pts,color:'#e0b15e',width:2.6,fill:'rgba(224,177,94,0.08)'}],
+    vlines:legs.filter(l=>l.kind!=='stock').map(l=>({x:l.K,color:l.kind==='call'?'#5aa2ff':'#ffb454',label:'K'+l.K,dash:[3,3]}))});
+}
+document.getElementById('addLeg').onclick=()=>{legs.push({kind:'call',dir:1,K:100,prem:5});render();};
+O.seg('presets',v=>{ if(v==='clear')legs=[]; else legs=JSON.parse(JSON.stringify(presets[v])); render(); });
+O.onResize(render);
+legs=JSON.parse(JSON.stringify(presets.bcs)); render();
+
+O.quiz('quiz',[
+ {q:'一张损益图在 S_T &lt; 100 时为水平的 −5,在 S_T &gt; 100 后向上倾斜并在 105 穿过 0。这最可能是?',
+  opts:['Short Put','Long Call (K=100, 权利金 5)','Covered Call','Long Straddle'],a:1,
+  e:'亏损封顶在 −5(权利金),100 以上才开始获利,盈亏平衡在 105 = K+权利金,正是 Long Call 的形状。'},
+ {q:'损益图呈「V 字形」、在标的<b>大涨或大跌</b>时都盈利、在中间区域亏损,这是?',
+  opts:['Bull Spread','Covered Call','Long Straddle','Protective Put'],a:2,
+  e:'同时买入同行权价的 Call 与 Put(Straddle),押注大波动;只有标的大幅偏离行权价才能覆盖两份权利金。'},
+ {q:'损益线在高价区变成<b>水平</b>(封顶),通常说明组合里有?',
+  opts:['一条卖出的期权腿','只有买入腿','没有期权','无限风险'],a:0,
+  e:'卖出(Short)一条腿会在某价位后抵消进一步的盈亏,使损益封顶——例如 Spread 卖出的高行权价 Call。'},
+]);
+
+</script>
+</body>
+</html>
+

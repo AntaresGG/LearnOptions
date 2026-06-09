@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>期权学堂 · Options Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ===== 期权学堂 · 共享样式  Options Academy shared styles ===== */
+:root{
+  --bg:#0a0e16;--bg2:#0d121d;--surface:#131a27;--surface2:#1a2333;
+  --border:#27303f;--border-soft:#1e2735;--text:#e8ecf3;--muted:#8b95a8;--faint:#5a647a;
+  --gold:#e0b15e;--gold-dim:#a8854a;--call:#5aa2ff;--put:#ffb454;--up:#ff5b6e;--down:#22c98b;
+  --shadow:0 18px 50px -20px rgba(0,0,0,.75);
+  --mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+  --serif:"Spectral",Georgia,"Songti SC",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Hiragino Sans GB",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--sans);background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;
+  background-image:
+    linear-gradient(rgba(224,177,94,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(224,177,94,.025) 1px,transparent 1px),
+    radial-gradient(ellipse 80% 60% at 50% -10%,rgba(90,162,255,.08),transparent 60%);
+  background-size:42px 42px,42px 42px,100% 100%;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+.mono{font-family:var(--mono)}
+
+/* ---- layout ---- */
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px 78px}
+.topbar{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(10,14,22,.82);border-bottom:1px solid var(--border-soft)}
+.topbar-in{max-width:1120px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px}
+.brand{font-family:var(--serif);font-weight:700;font-size:16px;letter-spacing:.5px;color:var(--gold);white-space:nowrap}
+.brand span{color:var(--faint);font-weight:400;font-size:12px;margin-left:6px;letter-spacing:0}
+.topbar-spacer{flex:1}
+.tb-link{font-size:13px;color:var(--muted);padding:6px 11px;border:1px solid var(--border);border-radius:8px;transition:.18s;white-space:nowrap}
+.tb-link:hover{color:var(--text);border-color:var(--gold-dim)}
+
+/* ---- hero ---- */
+header.hero{padding:54px 0 26px;border-bottom:1px solid var(--border-soft);margin-bottom:30px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:3px;color:var(--gold-dim);text-transform:uppercase;margin-bottom:16px}
+h1.title{font-family:var(--serif);font-size:clamp(32px,7vw,52px);line-height:1.06;font-weight:700;letter-spacing:-.5px}
+h1.title .en{display:block;font-size:clamp(15px,3.5vw,21px);color:var(--muted);font-weight:400;font-style:italic;margin-top:10px;letter-spacing:.3px}
+.lede{color:var(--muted);font-size:16px;margin-top:20px;max-width:660px}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.btn{display:inline-flex;align-items:center;gap:6px;background:var(--gold);color:#1a130a;border:none;font-weight:600;font-size:14px;padding:11px 20px;border-radius:9px;cursor:pointer;font-family:var(--sans);transition:.15s}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:none;border:1px solid var(--border);color:var(--muted)}
+.btn.ghost:hover{color:var(--text);border-color:var(--gold-dim)}
+
+/* ---- progress ---- */
+.progress{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:15px 18px;box-shadow:var(--shadow);margin-bottom:30px}
+.prog-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
+.prog-head .lab{font-family:var(--mono);font-size:12px;letter-spacing:1.5px;color:var(--gold-dim);text-transform:uppercase}
+.prog-head .meta{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.prog-head .meta b{color:var(--gold)}
+.track{height:8px;background:var(--bg2);border:1px solid var(--border);border-radius:999px;overflow:hidden}
+.bar{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--gold),var(--call));transition:width .35s ease}
+
+/* ---- section ---- */
+section{margin:34px 0}
+.sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:18px}
+.sec-num{font-family:var(--mono);font-size:13px;color:var(--gold);border:1px solid var(--gold-dim);border-radius:6px;padding:2px 8px;flex:none}
+h2{font-family:var(--serif);font-size:24px;font-weight:600;letter-spacing:-.2px}
+.sec-note{color:var(--muted);font-size:13.5px;margin-left:auto;max-width:430px;text-align:right}
+@media(max-width:680px){.sec-note{display:none}}
+
+/* ---- learning path ---- */
+.path{display:flex;flex-direction:column;gap:12px}
+.mod{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:start;
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);transition:.18s}
+.mod:hover{border-color:var(--gold-dim);transform:translateY(-2px)}
+.mod-num{font-family:var(--mono);font-size:13px;color:var(--gold);border:1px solid var(--gold-dim);border-radius:8px;padding:6px 9px;line-height:1}
+.mod-body{min-width:0}
+.mod-title{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--text);line-height:1.25}
+.mod-title .en{font-style:italic;font-weight:400;color:var(--muted);font-size:14px;margin-left:9px}
+.mod:hover .mod-title{color:var(--gold)}
+.mod-desc{color:#c6cdda;font-size:13.5px;margin-top:4px}
+.mod-links{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px;position:relative;z-index:1}
+.mlink{font-family:var(--mono);font-size:12px;color:var(--muted);border:1px solid var(--border);background:var(--bg2);border-radius:7px;padding:3px 9px;transition:.15s}
+.mlink:hover{color:var(--text);border-color:var(--gold-dim)}
+.mlink.greek{color:var(--call);border-color:#2b3d57}
+.mlink.greek:hover{border-color:var(--call)}
+/* stretched link: whole card opens the lesson */
+.mod-go{position:static}
+.mod-go::after{content:"";position:absolute;inset:0;z-index:0;border-radius:14px}
+.mod-arrow{align-self:center;color:var(--faint);font-family:var(--mono);font-size:18px;transition:.18s}
+.mod:hover .mod-arrow{color:var(--gold);transform:translateX(3px)}
+/* completion toggle */
+.check{position:relative;z-index:1;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg2);
+  color:transparent;font-size:13px;cursor:pointer;display:grid;place-items:center;transition:.15s;margin-top:2px}
+.check:hover{border-color:var(--gold-dim)}
+.check.done{background:var(--down);border-color:var(--down);color:#06281c}
+.mod-side{display:flex;align-items:center;gap:14px}
+@media(max-width:560px){
+  .mod{grid-template-columns:auto minmax(0,1fr);gap:12px}
+  .mod-side{flex-direction:column;align-items:flex-end;gap:8px}
+}
+
+footer.foot{text-align:center;color:var(--faint);font-size:12.5px;margin-top:54px;font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="topbar-in">
+  <span class="brand">期权学堂<span>Options Academy</span></span>
+  <div class="topbar-spacer"></div>
+  <a class="tb-link" href="#path">学习路径</a>
+  <a class="tb-link" href="04-greeks.html">Greeks</a>
+</div></div>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Options Academy · 交互式期权课程</div>
+    <h1 class="title">从一张图开始，把期权讲清楚<span class="en">Mechanics, Greeks &amp; Strategy, one page at a time</span></h1>
+    <p class="lede">九个模块按知识依赖串成一条主线：先建立认购认沽的直觉，再拆解价格与敏感度，最后把单腿拼成完整策略。每页自带交互、图表与小测验，可离线直接打开。</p>
+    <div class="hero-actions">
+      <a class="btn" href="01-call-put.html">开始第 01 节 →</a>
+      <a class="btn ghost" href="04-greeks.html">Greeks 速查</a>
+      <a class="btn ghost" href="strategy-builder.html">策略构建器 →</a>
+    </div>
+  </header>
+
+  <div class="progress">
+    <div class="prog-head">
+      <span class="lab">学习进度</span>
+      <span class="meta"><b id="progDone">0</b> / 9 模块已完成</span>
+    </div>
+    <div class="track"><div class="bar" id="progBar"></div></div>
+  </div>
+
+  <section id="path">
+    <div class="sec-head">
+      <span class="sec-num">路径</span>
+      <h2>核心学习路径</h2>
+      <p class="sec-note">从权利义务到策略体系，按知识依赖排序。点亮右侧圆点可标记完成，进度存在本机浏览器。</p>
+    </div>
+    <div class="path" id="pathList"></div>
+  </section>
+
+  <footer class="foot">期权学堂 · 仅用于教育演示，所有定价为简化的 Black-Scholes 模型，不构成投资建议</footer>
+</div>
+
+<script>
+const MODULES = [
+  {id:"01", href:"01-call-put.html",     title:"Call / Put 认购与认沽", en:"Long &amp; Short",        desc:"建立买方/卖方、认购/认沽四种基础头寸，看懂权利与义务。"},
+  {id:"02", href:"02-intrinsic-time.html",title:"内在价值与时间价值",    en:"Intrinsic &amp; Time",   desc:"把权利金拆成可立即兑现的内在价值，与剩余的时间价值。"},
+  {id:"03", href:"03-moneyness.html",    title:"实值 / 平值 / 虚值",     en:"Moneyness",              desc:"用标的价与行权价的位置关系理解 ITM、ATM、OTM。"},
+  {id:"04", href:"04-greeks.html",       title:"希腊字母 Greeks",        en:"The Greeks",             desc:"五大敏感度总览，配 Black-Scholes 实时计算器。",
+    links:[
+      {href:"delta.html", text:"Delta", greek:true},
+      {href:"gamma.html", text:"Gamma", greek:true},
+      {href:"theta.html", text:"Theta", greek:true},
+      {href:"vega.html",  text:"Vega",  greek:true},
+      {href:"rho.html",   text:"Rho",   greek:true}
+    ]},
+  {id:"05", href:"05-volatility.html",   title:"隐含波动率 vs 历史波动率", en:"Implied vs Historical Vol", desc:"区分 IV 与 HV，理解波动率如何驱动权利金。",
+    links:[{href:"iv-hv-vega-theta.html", text:"IV / HV · Vega / Theta 指示器"}]},
+  {id:"06", href:"06-payoff.html",       title:"损益图 Payoff",          en:"Payoff at Expiration",   desc:"从单腿到多腿，用多腿搭建器读懂到期盈亏结构。"},
+  {id:"07", href:"07-parity.html",       title:"认购认沽平价",           en:"Put-Call Parity",        desc:"用 Put-Call Parity 连接期权、股票、现金与套利边界。"},
+  {id:"08", href:"08-strategies.html",   title:"基础策略",               en:"Basic Strategies",       desc:"把单腿组合成价差、跨式、备兑等常见结构，配策略实验室。"},
+  {id:"09", href:"strategy-system.html", title:"策略体系",               en:"Strategy System",        desc:"按 McMillan 框架，在行情 × 波动率条件下做策略选型与图鉴。"}
+];
+
+const KEY = "learnoptions.progress.v1";
+const state = JSON.parse(localStorage.getItem(KEY) || "{}");
+const pathList = document.getElementById("pathList");
+const progBar = document.getElementById("progBar");
+const progDone = document.getElementById("progDone");
+
+function renderProgress(){
+  const done = MODULES.filter(m => state[m.id]).length;
+  progBar.style.width = Math.round(done / MODULES.length * 100) + "%";
+  progDone.textContent = done;
+}
+
+MODULES.forEach(m => {
+  const row = document.createElement("div");
+  row.className = "mod";
+  const links = (m.links || [])
+    .map(l => `<a class="mlink${l.greek ? " greek" : ""}" href="${l.href}">${l.text}</a>`)
+    .join("");
+  row.innerHTML =
+    `<span class="mod-num">${m.id}</span>` +
+    `<div class="mod-body">` +
+      `<div class="mod-title"><a class="mod-go" href="${m.href}">${m.title}<span class="en">${m.en}</span></a></div>` +
+      `<div class="mod-desc">${m.desc}</div>` +
+      (links ? `<div class="mod-links">${links}</div>` : "") +
+    `</div>` +
+    `<div class="mod-side">` +
+      `<button class="check" type="button" data-id="${m.id}" aria-label="标记第 ${m.id} 节完成" title="标记完成">✓</button>` +
+      `<span class="mod-arrow">→</span>` +
+    `</div>`;
+  pathList.appendChild(row);
+});
+
+pathList.addEventListener("click", e => {
+  const btn = e.target.closest(".check");
+  if(!btn) return;
+  e.preventDefault();
+  const id = btn.dataset.id;
+  state[id] = !state[id];
+  btn.classList.toggle("done", Boolean(state[id]));
+  localStorage.setItem(KEY, JSON.stringify(state));
+  renderProgress();
+});
+
+document.querySelectorAll(".check").forEach(btn => {
+  if(state[btn.dataset.id]) btn.classList.add("done");
+});
+renderProgress();
+</script>
+</body>
+</html>

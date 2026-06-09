@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>09 · 策略体系 | 期权学堂</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ===== 期权学堂 · 共享样式  Options Academy shared styles ===== */
+:root{
+  --bg:#0a0e16;
+  --bg2:#0d121d;
+  --surface:#131a27;
+  --surface2:#1a2333;
+  --border:#27303f;
+  --border-soft:#1e2735;
+  --text:#e8ecf3;
+  --muted:#8b95a8;
+  --faint:#5a647a;
+  --gold:#e0b15e;
+  --gold-dim:#a8854a;
+  --call:#5aa2ff;     /* Call 认购 */
+  --put:#ffb454;      /* Put  认沽 */
+  --up:#ff5b6e;       /* 盈利 / 上涨  (红涨) */
+  --down:#22c98b;     /* 亏损 / 下跌  (绿跌) */
+  --shadow:0 18px 50px -20px rgba(0,0,0,.75);
+  --mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+  --serif:"Spectral",Georgia,"Songti SC",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Hiragino Sans GB",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  min-height:100vh;
+  background-image:
+    linear-gradient(rgba(224,177,94,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(224,177,94,.025) 1px,transparent 1px),
+    radial-gradient(ellipse 80% 60% at 50% -10%,rgba(90,162,255,.08),transparent 60%);
+  background-size:42px 42px,42px 42px,100% 100%;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+.mono{font-family:var(--mono)}
+.up{color:var(--up)} .down{color:var(--down)}
+.call-c{color:var(--call)} .put-c{color:var(--put)}
+
+/* ---- layout ---- */
+.wrap{max-width:1360px;margin:0 auto;padding:0 12px 78px}
+.topbar{
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(14px);
+  background:rgba(10,14,22,.82);
+  border-bottom:1px solid var(--border-soft);
+}
+.topbar-in{max-width:1360px;margin:0 auto;padding:12px 12px;display:flex;align-items:center;gap:14px}
+.brand{font-family:var(--serif);font-weight:700;font-size:16px;letter-spacing:.5px;color:var(--gold);white-space:nowrap}
+.brand span{color:var(--faint);font-weight:400;font-size:12px;margin-left:6px;letter-spacing:0}
+.topbar-spacer{flex:1}
+.tb-link{font-size:13px;color:var(--muted);padding:6px 11px;border:1px solid var(--border);border-radius:8px;transition:.18s;white-space:nowrap}
+.tb-link:hover{color:var(--text);border-color:var(--gold-dim)}
+
+/* ---- hero ---- */
+header.hero{padding:46px 0 18px;border-bottom:1px solid var(--border-soft);margin-bottom:30px;position:relative}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:3px;color:var(--gold-dim);text-transform:uppercase;margin-bottom:14px}
+h1.title{font-family:var(--serif);font-size:clamp(30px,7vw,46px);line-height:1.08;font-weight:700;letter-spacing:-.5px}
+h1.title .en{display:block;font-size:clamp(15px,3.5vw,20px);color:var(--muted);font-weight:400;font-style:italic;margin-top:8px;letter-spacing:.3px}
+.lede{color:var(--muted);font-size:16px;margin-top:18px;max-width:640px}
+
+/* ---- sections / cards ---- */
+section{margin:34px 0}
+.sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+.sec-num{font-family:var(--mono);font-size:13px;color:var(--gold);border:1px solid var(--gold-dim);border-radius:6px;padding:2px 8px;flex:none}
+h2{font-family:var(--serif);font-size:24px;font-weight:600;letter-spacing:-.2px}
+h3{font-family:var(--serif);font-size:18px;font-weight:600;margin:18px 0 8px}
+p.body{color:#c6cdda;margin:10px 0}
+p.body b{color:var(--text)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
+.card+.card{margin-top:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+
+/* ---- callout / note ---- */
+.note{border-left:3px solid var(--gold);background:linear-gradient(90deg,rgba(224,177,94,.08),transparent);padding:12px 16px;border-radius:0 10px 10px 0;color:#cfd6e3;font-size:14.5px;margin:14px 0}
+.note b{color:var(--gold)}
+.note.mnemonic{border-left-color:#ff8a1f;background:linear-gradient(90deg,rgba(255,138,31,.16),rgba(255,138,31,.035),transparent);color:#ffb35c;font-size:18px;font-weight:700;letter-spacing:.2px}
+.note.mnemonic b{color:#ff8a1f}
+.kbd{font-family:var(--mono);background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:.88em;color:var(--gold)}
+
+/* ---- formula ---- */
+.formula{font-family:var(--mono);background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;font-size:15px;color:var(--text);overflow-x:auto;text-align:center;letter-spacing:.3px}
+.formula .hl{color:var(--gold)}
+
+/* ---- controls ---- */
+.controls{display:flex;flex-direction:column;gap:16px}
+.ctrl label{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:var(--muted);margin-bottom:7px}
+.ctrl label .val{font-family:var(--mono);color:var(--gold);font-size:15px;font-weight:500}
+.ctrl label .nm{color:var(--text)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:5px;background:var(--surface2);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;border-radius:50%;background:var(--gold);border:3px solid var(--bg);box-shadow:0 0 0 1px var(--gold-dim);cursor:pointer;transition:.12s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.15)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--gold);border:3px solid var(--bg);cursor:pointer}
+.seg{display:inline-flex;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px}
+.seg button{font-family:var(--sans);background:none;border:none;color:var(--muted);padding:7px 15px;border-radius:7px;font-size:13.5px;cursor:pointer;transition:.15s;white-space:nowrap}
+.seg button.active{background:var(--surface2);color:var(--text);box-shadow:0 1px 0 rgba(255,255,255,.04)}
+.seg button.active.call{color:var(--call)} .seg button.active.put{color:var(--put)}
+
+/* ---- readout chips ---- */
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin-top:6px}
+.chip{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:11px 13px}
+.chip .k{font-size:11.5px;color:var(--faint);letter-spacing:.5px;font-family:var(--mono)}
+.chip .v{font-family:var(--mono);font-size:21px;font-weight:600;margin-top:3px;line-height:1.1}
+.chip .u{font-size:11px;color:var(--muted);margin-left:3px}
+
+/* ---- chart ---- */
+.chart-wrap{position:relative;width:100%}
+canvas.chart{width:100%;display:block;border-radius:12px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.legend .dot{width:9px;height:9px;border-radius:50%}
+
+/* ---- quiz ---- */
+.quiz{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px}
+.q{margin-bottom:8px}
+.q+.q{margin-top:22px;padding-top:22px;border-top:1px dashed var(--border)}
+.q .prompt{font-size:15.5px;margin-bottom:13px;color:var(--text)}
+.q .prompt .n{font-family:var(--mono);color:var(--gold);margin-right:8px}
+.opt{display:block;width:100%;text-align:left;background:var(--bg2);border:1px solid var(--border);color:#cdd4e1;padding:12px 15px;border-radius:10px;font-size:14.5px;cursor:pointer;transition:.15s;margin-bottom:9px;font-family:var(--sans)}
+.opt:hover{border-color:var(--gold-dim)}
+.opt.correct{border-color:var(--down);background:rgba(34,201,139,.12);color:#bff0d9}
+.opt.wrong{border-color:var(--up);background:rgba(255,91,110,.1);color:#ffc7ce}
+.opt.disabled{cursor:default;opacity:.55}
+.opt .mk{float:right;font-weight:700}
+.explain{font-size:13.5px;color:var(--muted);background:var(--bg2);border-radius:9px;padding:11px 14px;margin-top:4px;border-left:2px solid var(--gold-dim);display:none}
+.explain.show{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
+
+/* ---- drag classify ---- */
+.dragpool{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;min-height:20px}
+.dcard{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;cursor:grab;user-select:none;touch-action:none;transition:box-shadow .15s,transform .05s}
+.dcard:active{cursor:grabbing}
+.dcard.dragging{box-shadow:0 10px 26px -6px rgba(0,0,0,.6);opacity:.92}
+.dcard.placed{cursor:default}
+.dcard.sel{outline:2px solid var(--gold);outline-offset:1px}
+.buckets{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:560px){.buckets{grid-template-columns:1fr}}
+.bucket{border:1.5px dashed var(--border);border-radius:13px;padding:14px;min-height:120px;transition:.15s}
+.bucket.over{border-color:var(--gold);background:rgba(224,177,94,.06)}
+.bucket .bt{font-family:var(--mono);font-size:13px;letter-spacing:1px;color:var(--gold);margin-bottom:4px}
+.bucket .bd{font-size:12px;color:var(--faint);margin-bottom:12px}
+.bucket .drop{display:flex;flex-direction:column;gap:8px;min-height:30px}
+.dcard.ok{border-color:var(--down)} .dcard.no{border-color:var(--up)}
+.btn{background:var(--gold);color:#1a130a;border:none;font-weight:600;font-size:14px;padding:10px 20px;border-radius:9px;cursor:pointer;font-family:var(--sans);transition:.15s}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:none;border:1px solid var(--border);color:var(--muted)}
+.btn.ghost:hover{color:var(--text);border-color:var(--gold-dim)}
+.drag-actions{display:flex;gap:10px;margin-top:16px;align-items:center}
+.drag-score{font-family:var(--mono);font-size:14px;color:var(--muted)}
+
+/* ---- table ---- */
+table.t{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
+table.t th,table.t td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+table.t th{color:var(--gold-dim);font-weight:600;font-family:var(--mono);font-size:12px;letter-spacing:.5px;text-transform:uppercase}
+table.t td{color:#c6cdda}
+table.t tr:last-child td{border-bottom:none}
+.mono-pos{color:var(--up)} .mono-neg{color:var(--down)}
+
+/* ---- prevnext ---- */
+.prevnext{display:flex;justify-content:space-between;gap:12px;margin-top:46px;padding-top:24px;border-top:1px solid var(--border-soft)}
+.pn{flex:1;border:1px solid var(--border);border-radius:13px;padding:15px 18px;transition:.18s;min-width:0}
+.pn:hover{border-color:var(--gold-dim);background:var(--surface)}
+.pn .d{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:1px}
+.pn .t{font-family:var(--serif);font-size:16px;margin-top:4px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pn.next{text-align:right}
+.pn.disabled{opacity:.32;pointer-events:none}
+footer.foot{text-align:center;color:var(--faint);font-size:12.5px;margin-top:50px;font-family:var(--mono)}
+
+/* ---- index hub ---- */
+.cardgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:640px){.cardgrid{grid-template-columns:1fr}}
+.topic{display:block;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;transition:.2s;position:relative;overflow:hidden}
+.topic::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,rgba(224,177,94,.1),transparent 55%);opacity:0;transition:.2s}
+.topic:hover{border-color:var(--gold-dim);transform:translateY(-3px)}
+.topic:hover::before{opacity:1}
+.topic .tn{font-family:var(--mono);font-size:12px;color:var(--gold)}
+.topic .th{font-family:var(--serif);font-size:19px;margin:8px 0 5px;font-weight:600}
+.topic .te{font-size:12px;color:var(--faint);font-style:italic;margin-bottom:9px}
+.topic .tp{font-size:13.5px;color:var(--muted);line-height:1.5}
+.topic .tags{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-family:var(--mono);font-size:10.5px;color:var(--muted);border:1px solid var(--border);border-radius:5px;padding:2px 7px}
+
+/* ---- module 09 additions: framework + matrix + gallery ---- */
+.frame{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:760px){.frame{grid-template-columns:1fr}}
+.fcard{background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:18px;position:relative;overflow:hidden}
+.fcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent,var(--gold))}
+.fcard .ft{font-family:var(--serif);font-size:18px;font-weight:600;color:var(--accent,var(--gold))}
+.fcard .fe{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:1px;margin:2px 0 12px}
+.fcard ul{list-style:none;margin:8px 0 0}
+.fcard li{font-size:13.5px;color:#c6cdda;padding:3px 0 3px 16px;position:relative}
+.fcard li::before{content:"–";position:absolute;left:0;color:var(--accent,var(--gold))}
+.fcard .ftag{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:11px;line-height:1.9}
+.fcard .ftag span{border:1px solid var(--border);border-radius:5px;padding:1px 6px;margin-right:5px;white-space:nowrap}
+
+.mx-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.mx-row .lab{font-size:12.5px;color:var(--faint);font-family:var(--mono);letter-spacing:.5px;width:64px;flex:none}
+.reco{background:var(--bg2);border:1px solid var(--gold-dim);border-radius:13px;padding:15px 17px;margin-top:6px}
+.reco .rk{font-family:var(--mono);font-size:11.5px;color:var(--faint);letter-spacing:1px}
+.reco .rn{font-family:var(--serif);font-size:21px;font-weight:700;color:var(--gold);margin:4px 0 6px}
+.reco .rd{font-size:13.5px;color:#c6cdda}
+.reco .ralt{font-size:12.5px;color:var(--muted);margin-top:9px;font-family:var(--mono)}
+.reco .ralt b{color:var(--text);font-weight:500}
+
+.gal{display:flex;flex-wrap:wrap;gap:7px}
+.gal button{font-family:var(--sans);background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:7px 12px;border-radius:8px;font-size:13px;cursor:pointer;transition:.15s}
+.gal button:hover{border-color:var(--gold-dim);color:var(--text)}
+.gal button.on{background:var(--surface2);color:var(--text);border-color:var(--gold)}
+.galcat{font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--accent,var(--gold));margin:14px 0 7px;text-transform:uppercase}
+.galcat:first-child{margin-top:0}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="topbar-in">
+  <a class="brand" href="index.html">期权学堂<span>Options Academy</span></a>
+  <div class="topbar-spacer"></div>
+  <a class="tb-link" href="index.html">← 目录</a>
+</div></div>
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">MODULE 09</div>
+  <h1 class="title">策略体系<span class="en">The Strategy System · after McMillan</span></h1>
+  <p class="lede">从单腿到多腿——按 McMillan 的四大分类(方向 / 波动率 / 收益 / 风控)系统梳理 20+ 种策略。先用「市场判断 × 波动率」矩阵快速选型,再在图鉴中查看每种策略的到期损益、盈亏平衡与最大风险收益。</p>
+</header>
+
+<section>
+  <div class="sec-head"><span class="sec-num">框架</span><h2>McMillan 的四大分类</h2></div>
+  <div class="card" style="margin-bottom:18px">
+    <p class="body" style="margin:0">期权策略千变万化,但 McMillan 把它们归为四个家族。选型的第一步不是「记住每个策略」,而是先问自己两件事:<b>我对方向有多大把握?</b> 以及 <b>当前 IV 是高是低?</b> 方向决定家族,波动率决定该买还是该卖。</p>
+    <div class="note mnemonic"><b>口诀：</b>方向看趋势，波动看事件，收益靠卖时间，风控为保命。</div>
+  </div>
+  <div class="frame">
+    <div class="fcard" style="--accent:var(--call)">
+      <div class="ft">1 · Directional 方向性</div>
+      <div class="fe">交易方向 · 盈亏由标的价格驱动</div>
+      <ul>
+        <li>主要押注标的涨跌方向</li>
+        <li>对波动率敏感度较低</li>
+        <li>对市场方向有较高把握、趋势明显时使用</li>
+      </ul>
+      <div class="ftag"><span>Long Call</span><span>Long Put</span><span>Covered Call</span><span>Naked Put</span><span>Protective Put</span><span>LEAPS</span></div>
+    </div>
+    <div class="fcard" style="--accent:var(--put)">
+      <div class="ft">2 · Volatility 波动率</div>
+      <div class="fe">交易 IV · Vega 与 Theta 是关键</div>
+      <ul>
+        <li>交易隐含波动率而非方向</li>
+        <li>重大事件前后、方向不确定时使用</li>
+        <li>关注 IV Rank / IV Percentile / Vega / Theta</li>
+      </ul>
+      <div class="ftag"><span>Long/Short Straddle</span><span>Strangle</span><span>Calendar</span><span>Diagonal</span><span>Backspread</span></div>
+    </div>
+    <div class="fcard" style="--accent:var(--up)">
+      <div class="ft">3 · Income 收益增强</div>
+      <div class="fe">卖出时间价值 · 高胜率 · 收益有限</div>
+      <ul>
+        <li>通过卖出时间价值赚取稳定现金流</li>
+        <li>高波动率、震荡市场最适合</li>
+        <li>胜率高但存在尾部 / 黑天鹅风险,须严格风控</li>
+      </ul>
+      <div class="ftag"><span>Covered Call</span><span>Naked Put</span><span>Credit Spread</span><span>Iron Condor</span></div>
+    </div>
+    <div class="fcard" style="--accent:var(--down)">
+      <div class="ft">4 · Risk-Control 风险控制</div>
+      <div class="fe">对冲系统性风险 · 降低回撤</div>
+      <ul>
+        <li>以风险管理而非获利为目标</li>
+        <li>长期持仓保护、重大事件对冲、组合保险</li>
+        <li>最能体现期权区别于股票的核心价值</li>
+      </ul>
+      <div class="ftag"><span>Protective Put</span><span>Collar</span><span>Hedge Ratio Spread</span><span>Portfolio Insurance</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">选型</span><h2>策略实验室 · 矩阵选型与图鉴</h2></div>
+  <div class="card">
+    <p class="body" style="margin-top:0">先用矩阵按场景选型,或直接在图鉴中浏览。权利金按 Black-Scholes 实时估算(S₀=100,r=2%),拖动 σ 与剩余天数,损益形态随之更新。</p>
+
+    <h3 style="margin-top:6px">① 按场景选型</h3>
+    <div class="mx-row"><span class="lab">市场判断</span>
+      <div class="seg" id="mView" style="flex-wrap:wrap">
+        <button class="active" data-v="强烈看涨">强烈看涨</button>
+        <button data-v="温和看涨">温和看涨</button>
+        <button data-v="强烈看跌">强烈看跌</button>
+        <button data-v="温和看跌">温和看跌</button>
+        <button data-v="震荡">震荡 / 区间</button>
+        <button data-v="大涨大跌">大涨大跌 / 突破</button>
+      </div>
+    </div>
+    <div class="mx-row"><span class="lab">波动率 IV</span>
+      <div class="seg" id="mIV">
+        <button class="active" data-v="低">IV 低(便宜)</button>
+        <button data-v="高">IV 高(昂贵)</button>
+      </div>
+    </div>
+    <div class="reco" id="reco"></div>
+
+    <h3>② 浏览策略图鉴</h3>
+    <div class="gal" id="gallery"></div>
+
+    <div class="controls" style="margin-top:20px">
+      <div class="ctrl"><label><span class="nm">波动率 σ(影响权利金)</span><span class="val" id="vV">30%</span></label><input type="range" id="rV" min="10" max="70" step="1" value="30"></div>
+      <div class="ctrl"><label><span class="nm">剩余天数 T</span><span class="val" id="vT">60</span></label><input type="range" id="rT" min="7" max="365" step="1" value="60"></div>
+    </div>
+
+    <div id="stratInfo" style="margin:18px 0"></div>
+    <div class="chart-wrap"><canvas class="chart" id="cv"></canvas></div>
+    <div class="legend"><span><i style="background:var(--gold)"></i>到期损益</span><span><i style="background:var(--muted)"></i>盈亏平衡线</span><span><i class="dot" style="background:var(--call)"></i>当前 S₀=100</span></div>
+    <table class="t" id="legTable" style="margin-top:18px"></table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">练习</span><h2>把策略归入四大家族</h2></div>
+  <div class="card">
+    <p class="body" style="margin-top:0">把下列策略拖入(或点选后点击)正确的家族。同一策略有时跨家族,这里按 McMillan 的最具代表性归类。</p>
+    <div id="classify">
+      <div class="dragpool"></div>
+      <div class="buckets" style="grid-template-columns:repeat(2,1fr)">
+        <div class="bucket" data-b="dir"><div class="bt">DIRECTIONAL</div><div class="bd">方向性 · 押方向</div><div class="drop"></div></div>
+        <div class="bucket" data-b="vol"><div class="bt">VOLATILITY</div><div class="bd">波动率 · 押波动</div><div class="drop"></div></div>
+        <div class="bucket" data-b="inc"><div class="bt">INCOME</div><div class="bd">收益 · 卖时间</div><div class="drop"></div></div>
+        <div class="bucket" data-b="risk"><div class="bt">RISK-CONTROL</div><div class="bd">风控 · 保命</div><div class="drop"></div></div>
+      </div>
+      <div class="drag-actions">
+        <button class="btn" data-act="check">检查答案</button>
+        <button class="btn ghost" data-act="reset">重置</button>
+        <span class="drag-score"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">巩固</span><h2>小测验</h2></div>
+  <div class="quiz" id="quiz"></div>
+</section>
+
+<div class="prevnext"><a class="pn prev" href="08-strategies.html"><div class="d">← 上一节 · 08</div><div class="t">基础策略</div></a><a class="pn next disabled"><div class="d">课程收尾</div><div class="t">—</div></a></div>
+<footer class="foot">期权学堂 · 策略分类参考 McMillan《Options as a Strategic Investment》· 仅用于教育演示,所有定价基于 Black-Scholes 理想模型,不构成投资建议</footer>
+</div>
+<script>
+/* ===== 期权学堂 · 共享脚本  Options Academy lib ===== */
+(function(){
+'use strict';
+const A = window.OA = {};
+
+/* ---------- math ---------- */
+A.ndf = x => Math.exp(-x*x/2)/Math.sqrt(2*Math.PI);
+A.ncdf = function(x){
+  const a1=.254829592,a2=-.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=.3275911;
+  const s = x<0?-1:1; x = Math.abs(x)/Math.SQRT2;
+  const t = 1/(1+p*x);
+  const y = 1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);
+  return .5*(1+s*y);
+};
+/* Black-Scholes (continuous), T in years, r & sig & q decimals.
+   Returns price + Greeks. theta per day, vega/rho per 1% (per point). */
+A.bs = function(type,S,K,T,r,sig,q){
+  q = q||0;
+  if(T<=0 || sig<=0){
+    const intr = type==='call'?Math.max(S-K,0):Math.max(K-S,0);
+    const dl = type==='call'?(S>K?1:0):(S<K?-1:0);
+    return {price:intr,delta:dl,gamma:0,theta:0,vega:0,rho:0,d1:0,d2:0};
+  }
+  const sq=Math.sqrt(T), eq=Math.exp(-q*T), er=Math.exp(-r*T);
+  const d1=(Math.log(S/K)+(r-q+sig*sig/2)*T)/(sig*sq), d2=d1-sig*sq;
+  const N1=A.ncdf(d1),N2=A.ncdf(d2),n1=A.ndf(d1);
+  let price,delta,rho,theta;
+  if(type==='call'){
+    price=S*eq*N1-K*er*N2;
+    delta=eq*N1;
+    rho=K*T*er*N2/100;
+    theta=(-S*eq*n1*sig/(2*sq)-r*K*er*N2+q*S*eq*N1)/365;
+  }else{
+    price=K*er*A.ncdf(-d2)-S*eq*A.ncdf(-d1);
+    delta=-eq*A.ncdf(-d1);
+    rho=-K*T*er*A.ncdf(-d2)/100;
+    theta=(-S*eq*n1*sig/(2*sq)+r*K*er*A.ncdf(-d2)-q*S*eq*A.ncdf(-d1))/365;
+  }
+  const gamma=eq*n1/(S*sig*sq);
+  const vega=S*eq*n1*sq/100;
+  return {price,delta,gamma,theta,vega,rho,d1,d2};
+};
+/* implied vol via bisection */
+A.impliedVol = function(type,S,K,T,r,mkt,q){
+  let lo=.0001, hi=5;
+  if(mkt < (type==='call'?Math.max(S-K,0):Math.max(K-S,0))-1e-6) return NaN;
+  for(let i=0;i<80;i++){
+    const mid=(lo+hi)/2;
+    const p=A.bs(type,S,K,T,r,mid,q).price;
+    if(Math.abs(p-mkt)<1e-6) return mid;
+    if(p>mkt) hi=mid; else lo=mid;
+  }
+  return (lo+hi)/2;
+};
+A.fmt = (x,d)=> (x==null||isNaN(x))?'–':x.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+/* ---------- chart (canvas line chart) ---------- */
+/* opts: {xmin,xmax,ymin?,ymax?, series:[{points:[[x,y]],color,width?,dash?,fill?}],
+   xlabel?,ylabel?, vlines:[{x,color,label?,dash?}], hlines:[{y,color,dash?}],
+   xticks?,yticks?, padFrac?, baseline?(y of profit zero)} */
+A.chart = function(canvas,opts){
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const cssW=canvas.clientWidth||620;
+  const cssH=opts.height||320;
+  canvas.style.height=cssH+'px';
+  canvas.width=cssW*dpr; canvas.height=cssH*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,cssW,cssH);
+  const ml=opts.ylabel?54:44, mr=16, mt=14, mb=opts.xlabel?40:30;
+  const W=cssW-ml-mr, H=cssH-mt-mb;
+  // y-range
+  let ymin=opts.ymin, ymax=opts.ymax;
+  if(ymin==null||ymax==null){
+    let lo=Infinity,hi=-Infinity;
+    opts.series.forEach(s=>s.points.forEach(p=>{if(isFinite(p[1])){lo=Math.min(lo,p[1]);hi=Math.max(hi,p[1]);}}));
+    if(!isFinite(lo)){lo=-1;hi=1;}
+    if(opts.baseline!=null){lo=Math.min(lo,opts.baseline);hi=Math.max(hi,opts.baseline);}
+    const pad=(hi-lo)*(opts.padFrac||.12)||1;
+    ymin=ymin==null?lo-pad:ymin; ymax=ymax==null?hi+pad:ymax;
+    if(ymin===ymax){ymin-=1;ymax+=1;}
+  }
+  const xmin=opts.xmin,xmax=opts.xmax;
+  const X=x=>ml+(x-xmin)/(xmax-xmin)*W;
+  const Y=y=>mt+H-(y-ymin)/(ymax-ymin)*H;
+  // grid + ticks
+  ctx.font='11px '+getComputedStyle(document.body).getPropertyValue('--mono');
+  const cs=getComputedStyle(document.documentElement);
+  const cBorder=cs.getPropertyValue('--border').trim();
+  const cMuted=cs.getPropertyValue('--muted').trim();
+  const cFaint=cs.getPropertyValue('--faint').trim();
+  const nx=opts.xticks||6, ny=opts.yticks||5;
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for(let i=0;i<=nx;i++){
+    const xv=xmin+(xmax-xmin)*i/nx, px=X(xv);
+    ctx.strokeStyle=cBorder; ctx.globalAlpha=.4; ctx.beginPath();
+    ctx.moveTo(px,mt); ctx.lineTo(px,mt+H); ctx.stroke(); ctx.globalAlpha=1;
+    ctx.fillStyle=cFaint; ctx.fillText(A.fmt(xv,xv%1===0?0:(Math.abs(xv)<10?1:0)),px,mt+H+7);
+  }
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(let i=0;i<=ny;i++){
+    const yv=ymin+(ymax-ymin)*i/ny, py=Y(yv);
+    ctx.strokeStyle=cBorder; ctx.globalAlpha=.4; ctx.beginPath();
+    ctx.moveTo(ml,py); ctx.lineTo(ml+W,py); ctx.stroke(); ctx.globalAlpha=1;
+    ctx.fillStyle=cFaint; ctx.fillText(A.fmt(yv,Math.abs(ymax-ymin)<5?2:(Math.abs(ymax-ymin)<50?1:0)),ml-7,py);
+  }
+  // zero baseline (profit) emphasised
+  if(opts.baseline!=null && opts.baseline>=ymin && opts.baseline<=ymax){
+    ctx.strokeStyle=cMuted; ctx.globalAlpha=.6; ctx.lineWidth=1; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(ml,Y(opts.baseline)); ctx.lineTo(ml+W,Y(opts.baseline)); ctx.stroke(); ctx.globalAlpha=1;
+  }
+  // hlines
+  (opts.hlines||[]).forEach(h=>{
+    if(h.y<ymin||h.y>ymax)return;
+    ctx.strokeStyle=h.color; ctx.lineWidth=1; ctx.setLineDash(h.dash||[5,4]);
+    ctx.beginPath();ctx.moveTo(ml,Y(h.y));ctx.lineTo(ml+W,Y(h.y));ctx.stroke();ctx.setLineDash([]);
+  });
+  // clip
+  ctx.save(); ctx.beginPath(); ctx.rect(ml,mt,W,H); ctx.clip();
+  // fills
+  opts.series.forEach(s=>{
+    if(!s.fill)return;
+    ctx.beginPath();
+    let started=false;
+    s.points.forEach(p=>{if(!isFinite(p[1]))return; if(!started){ctx.moveTo(X(p[0]),Y(p[1]));started=true;}else ctx.lineTo(X(p[0]),Y(p[1]));});
+    const last=s.points[s.points.length-1],first=s.points[0];
+    const by=opts.baseline!=null?Y(opts.baseline):mt+H;
+    ctx.lineTo(X(last[0]),by); ctx.lineTo(X(first[0]),by); ctx.closePath();
+    ctx.fillStyle=s.fill; ctx.fill();
+  });
+  // lines
+  opts.series.forEach(s=>{
+    ctx.strokeStyle=s.color; ctx.lineWidth=s.width||2.4; ctx.setLineDash(s.dash||[]);
+    ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.beginPath(); let started=false;
+    s.points.forEach(p=>{if(!isFinite(p[1]))return; const px=X(p[0]),py=Y(p[1]); if(!started){ctx.moveTo(px,py);started=true;}else ctx.lineTo(px,py);});
+    ctx.stroke(); ctx.setLineDash([]);
+  });
+  // vlines
+  (opts.vlines||[]).forEach(v=>{
+    if(v.x<xmin||v.x>xmax)return;
+    ctx.strokeStyle=v.color; ctx.lineWidth=1.4; ctx.setLineDash(v.dash||[4,4]);
+    ctx.beginPath();ctx.moveTo(X(v.x),mt);ctx.lineTo(X(v.x),mt+H);ctx.stroke();ctx.setLineDash([]);
+    if(v.label){ctx.restore();ctx.save();ctx.fillStyle=v.color;ctx.font='11px '+cs.getPropertyValue('--mono');ctx.textAlign='center';ctx.textBaseline='bottom';
+      const tx=Math.min(Math.max(X(v.x),ml+22),ml+W-22);ctx.fillText(v.label,tx,mt+11);ctx.beginPath();ctx.rect(ml,mt,W,H);ctx.clip();}
+  });
+  // dots
+  opts.series.forEach(s=>{(s.dots||[]).forEach(d=>{ctx.fillStyle=s.color;ctx.beginPath();ctx.arc(X(d[0]),Y(d[1]),3.5,0,7);ctx.fill();});});
+  ctx.restore();
+  // axis labels
+  if(opts.xlabel){ctx.fillStyle=cMuted;ctx.font='12px '+cs.getPropertyValue('--sans');ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(opts.xlabel,ml+W/2,cssH-2);}
+  if(opts.ylabel){ctx.save();ctx.translate(12,mt+H/2);ctx.rotate(-Math.PI/2);ctx.fillStyle=cMuted;ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText(opts.ylabel,0,0);ctx.restore();}
+};
+/* build evenly sampled points for fn over [a,b] */
+A.sample = function(a,b,n,fn){const pts=[];for(let i=0;i<=n;i++){const x=a+(b-a)*i/n;pts.push([x,fn(x)]);}return pts;};
+
+/* ---------- slider helper ---------- */
+/* id of <input range>, valEl id, formatter, onchange */
+A.slider = function(rangeId,valId,fmt,onInput){
+  const r=document.getElementById(rangeId), v=valId?document.getElementById(valId):null;
+  const upd=()=>{ if(v) v.textContent=fmt(parseFloat(r.value)); onInput(parseFloat(r.value)); };
+  r.addEventListener('input',upd); upd(); return r;
+};
+
+/* ---------- segmented control ---------- */
+A.seg = function(containerId,onChange){
+  const c=document.getElementById(containerId);
+  c.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+    c.querySelectorAll('button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); onChange(b.dataset.v,b);
+  }));
+};
+
+/* ---------- quiz ---------- */
+A.quiz = function(containerId,questions){
+  const c=document.getElementById(containerId);
+  questions.forEach((q,qi)=>{
+    const wrap=document.createElement('div'); wrap.className='q';
+    const p=document.createElement('div'); p.className='prompt';
+    p.innerHTML='<span class="n">Q'+(qi+1)+'</span>'+q.q; wrap.appendChild(p);
+    const ex=document.createElement('div'); ex.className='explain';
+    q.opts.forEach((o,oi)=>{
+      const btn=document.createElement('button'); btn.className='opt'; btn.innerHTML=o;
+      btn.addEventListener('click',()=>{
+        if(wrap.dataset.done)return; wrap.dataset.done='1';
+        wrap.querySelectorAll('.opt').forEach(b=>b.classList.add('disabled'));
+        if(oi===q.a){btn.classList.add('correct');btn.innerHTML=o+'<span class="mk">✓</span>';}
+        else{btn.classList.add('wrong');btn.innerHTML=o+'<span class="mk">✗</span>';
+          const cor=wrap.querySelectorAll('.opt')[q.a];cor.classList.add('correct');cor.innerHTML=q.opts[q.a]+'<span class="mk">✓</span>';}
+        ex.classList.add('show');
+      });
+      wrap.appendChild(btn);
+    });
+    ex.innerHTML='<b style="color:var(--gold)">解析 · </b>'+q.e; wrap.appendChild(ex);
+    c.appendChild(wrap);
+  });
+};
+
+/* ---------- drag classify (pointer based, mobile friendly + tap fallback) ---------- */
+/* items:[{id,label,bucket}], buckets:[{id,title,desc}] */
+A.classify = function(opts){
+  const root=document.getElementById(opts.root);
+  const pool=root.querySelector('.dragpool');
+  const drops={};
+  let selected=null;
+  root.querySelectorAll('.bucket').forEach(b=>{ drops[b.dataset.b]=b.querySelector('.drop'); });
+  const cards={};
+  opts.items.forEach(it=>{
+    const d=document.createElement('div'); d.className='dcard'; d.textContent=it.label; d.dataset.id=it.id; d.dataset.b=it.bucket;
+    cards[it.id]=d; pool.appendChild(d);
+    enableDrag(d);
+  });
+  function place(card,dropEl){ dropEl.appendChild(card); }
+  // tap fallback
+  function enableDrag(card){
+    let drag=null;
+    card.addEventListener('pointerdown',e=>{
+      if(card.classList.contains('locked'))return;
+      const r=card.getBoundingClientRect();
+      drag={sx:e.clientX,sy:e.clientY,ox:e.clientX-r.left,oy:e.clientY-r.top,moved:false,w:r.width,h:r.height};
+      card.setPointerCapture(e.pointerId);
+    });
+    card.addEventListener('pointermove',e=>{
+      if(!drag)return;
+      if(!drag.moved && Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)<5)return;
+      if(!drag.moved){ drag.moved=true; card.classList.add('dragging');
+        card.style.position='fixed';card.style.zIndex=999;card.style.width=drag.w+'px';card.style.pointerEvents='none';}
+      card.style.left=(e.clientX-drag.ox)+'px'; card.style.top=(e.clientY-drag.oy)+'px';
+      const el=document.elementFromPoint(e.clientX,e.clientY);
+      root.querySelectorAll('.bucket').forEach(b=>b.classList.remove('over'));
+      const bk=el&&el.closest('.bucket'); if(bk)bk.classList.add('over');
+    });
+    card.addEventListener('pointerup',e=>{
+      if(!drag)return;
+      if(drag.moved){
+        const el=document.elementFromPoint(e.clientX,e.clientY);
+        const bk=el&&el.closest('.bucket');
+        card.classList.remove('dragging');
+        card.style.position='';card.style.left='';card.style.top='';card.style.zIndex='';card.style.width='';card.style.pointerEvents='';
+        root.querySelectorAll('.bucket').forEach(b=>b.classList.remove('over'));
+        if(bk) place(card,drops[bk.dataset.b]); else pool.appendChild(card);
+      }else{ // tap
+        if(selected===card){card.classList.remove('sel');selected=null;}
+        else{ if(selected)selected.classList.remove('sel'); selected=card; card.classList.add('sel'); }
+      }
+      drag=null;
+    });
+  }
+  // tap a bucket to place selected
+  root.querySelectorAll('.bucket').forEach(b=>{
+    b.addEventListener('click',()=>{ if(selected){ place(selected,drops[b.dataset.b]); selected.classList.remove('sel'); selected=null; } });
+  });
+  // check
+  root.querySelector('[data-act=check]').addEventListener('click',()=>{
+    let right=0;
+    Object.keys(cards).forEach(id=>{
+      const card=cards[id]; const parentBucket=card.closest('.bucket');
+      card.classList.remove('ok','no');
+      if(parentBucket && parentBucket.dataset.b===card.dataset.b){card.classList.add('ok');right++;}
+      else if(parentBucket){card.classList.add('no');}
+    });
+    root.querySelector('.drag-score').textContent='得分  '+right+' / '+opts.items.length;
+  });
+  root.querySelector('[data-act=reset]').addEventListener('click',()=>{
+    Object.values(cards).forEach(c=>{c.classList.remove('ok','no','sel');pool.appendChild(c);});
+    selected=null; root.querySelector('.drag-score').textContent='';
+  });
+};
+
+/* redraw registered charts on resize (debounced) */
+A._redraws=[];
+A.onResize = fn=>{A._redraws.push(fn);};
+let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>A._redraws.forEach(f=>f()),120);});
+})();
+
+</script>
+<script>
+/* ===== Module 09 · 策略体系 ===== */
+const O=window.OA; const S0=100, r=0.02; let V=0.30, T=60, curKey='longcall';
+const cv=document.getElementById('cv');
+
+/* leg builders. entry = price paid(+)/received per unit at entry. */
+function P(kind,K,days){ return O.bs(kind,S0,K,(days==null?T:days)/365,r,V).price; }
+function opt(kind,dir,K,qty){ return {kind,dir,K,qty:qty||1,entry:P(kind,K)}; }
+function stk(dir){ return {kind:'stock',dir,K:0,qty:1,entry:S0}; }
+/* far-dated leg for calendars: still alive at near-leg expiry, valued with tRem remaining */
+function far(kind,dir,K,extraDays){ return {kind,dir,K,qty:1,tRem:extraDays/365,entry:P(kind,K,T+extraDays)}; }
+
+/* value of a leg at the evaluation horizon (near-leg expiration) */
+function legVal(l,S){
+  if(l.kind==='stock') return S;
+  if(l.tRem) return O.bs(l.kind,S,l.K,l.tRem,r,V).price;
+  return l.kind==='call'?Math.max(S-l.K,0):Math.max(l.K-S,0);
+}
+function legPL(l,S){ return l.dir*l.qty*(legVal(l,S)-l.entry); }
+
+const CAT={
+  dir:{t:'Directional · 方向性',c:'var(--call)'},
+  vol:{t:'Volatility · 波动率',c:'var(--put)'},
+  inc:{t:'Income · 收益增强',c:'var(--up)'},
+  risk:{t:'Risk-Control · 风险控制',c:'var(--down)'}
+};
+
+/* mp / ml: optional override strings for 最大盈利 / 最大亏损 when theoretically unbounded */
+const DEF={
+  /* ---- Directional ---- */
+  longcall:{cn:'买入认购',en:'Long Call',cat:'dir',view:'强烈看涨 · IV 低更划算',
+    legs:()=>[opt('call',1,100)], mp:'∞',
+    note:'用有限权利金博取理论上无限的上行。时间价值与 IV 下跌不断侵蚀价值,标的须在到期前涨过盈亏平衡点。'},
+  longput:{cn:'买入认沽',en:'Long Put',cat:'dir',view:'强烈看跌 · IV 低更划算',
+    legs:()=>[opt('put',1,100)],
+    note:'看跌的镜像:下行获利、上行只损失权利金。标的最低跌到 0,故盈利有上限但仍可观。'},
+  bullcall:{cn:'牛市认购价差',en:'Bull Call Spread',cat:'dir',view:'温和看涨 · 控制成本',
+    legs:()=>[opt('call',1,100),opt('call',-1,115)],
+    note:'买低行权 Call、卖高行权 Call。卖出腿补贴成本,代价是盈利封顶。风险收益双双有限,适合看涨但不愿付全额权利金。'},
+  bearput:{cn:'熊市认沽价差',en:'Bear Put Spread',cat:'dir',view:'温和看跌 · 控制成本',
+    legs:()=>[opt('put',1,100),opt('put',-1,85)],
+    note:'买高行权 Put、卖低行权 Put。看跌但控制成本,盈亏均有限。'},
+  /* ---- Volatility ---- */
+  longstraddle:{cn:'买入跨式',en:'Long Straddle',cat:'vol',view:'大涨大跌 · 押波动放大',
+    legs:()=>[opt('call',1,100),opt('put',1,100)], mp:'∞',
+    note:'同行权价买 Call+Put。无论大涨大跌都获利,但需覆盖两份权利金;横盘则双双损耗。事件前常用,惧怕事后 IV crush。'},
+  longstrangle:{cn:'买入宽跨式',en:'Long Strangle',cat:'vol',view:'大涨大跌 · 成本更低',
+    legs:()=>[opt('call',1,110),opt('put',1,90)], mp:'∞',
+    note:'买虚值 Call+虚值 Put,比跨式便宜,但需要更大的波动才能盈利。盈亏平衡区间更宽。'},
+  shortstraddle:{cn:'卖出跨式',en:'Short Straddle',cat:'vol',view:'震荡 · 押波动收缩(IV 高)',
+    legs:()=>[opt('call',-1,100),opt('put',-1,100)], ml:'无限(双向)',
+    note:'卖出 Call+Put 收双份权利金,赌标的钉在行权价附近。胜率高但两端亏损无限,是典型的「捡硬币于压路机前」。'},
+  shortstrangle:{cn:'卖出宽跨式',en:'Short Strangle',cat:'vol',view:'震荡 · IV 高',
+    legs:()=>[opt('call',-1,110),opt('put',-1,90)], ml:'无限(双向)',
+    note:'卖虚值 Call+Put,盈利区间比卖跨式更宽,胜率更高,但突破任一端仍是无限亏损。'},
+  calendar:{cn:'日历价差',en:'Calendar Spread',cat:'vol',view:'中性 · 预期 IV 升高(IV 低时建仓)',
+    legs:()=>[opt('call',-1,100),far('call',1,100,30)],
+    note:'卖近月、买远月同行权 Call。近月衰减快于远月,标的钉在行权价时获利;远月 IV 上升亦有利。曲线为近月到期时刻的估算,非直线。'},
+  butterfly:{cn:'蝶式价差',en:'Long Butterfly',cat:'vol',view:'价格锁定在窄区间',
+    legs:()=>[opt('call',1,90),opt('call',-2,100),opt('call',1,110)],
+    note:'1-2-1 三腿组合,成本低。标的精确钉在中间行权价时盈利最大,偏离则收益快速下降,风险有限。'},
+  callbackspread:{cn:'认购反向比率',en:'Call Backspread',cat:'vol',view:'预期向上突破(IV 低)',
+    legs:()=>[opt('call',-1,100),opt('call',2,110)], mp:'∞',
+    note:'卖 1 张低行权 Call、买 2 张高行权 Call。大涨时上行无限,小涨/横盘是最坏情形(中间区域亏损)。'},
+  putbackspread:{cn:'认沽反向比率',en:'Put Backspread',cat:'vol',view:'预期暴跌(IV 低)',
+    legs:()=>[opt('put',-1,100),opt('put',2,90)],
+    note:'卖 1 张高行权 Put、买 2 张低行权 Put。暴跌时下行收益很大,小跌/横盘为最坏情形。'},
+  /* ---- Income ---- */
+  coveredcall:{cn:'备兑开仓',en:'Covered Call',cat:'inc',view:'温和看涨 / 横盘 · 增强持股收益',
+    legs:()=>[stk(1),opt('call',-1,110)], ml:'大(标的可跌至 0)',
+    note:'持股 + 卖虚值 Call,收权利金降成本。上行被行权价锁定;若大跌仍承担标的下跌(仅权利金缓冲)。'},
+  nakedput:{cn:'卖出认沽',en:'Naked / Cash-Secured Put',cat:'inc',view:'温和看涨 · 愿在低位接货',
+    legs:()=>[opt('put',-1,95)], ml:'大(标的可跌至 0)',
+    note:'卖出 Put 收权利金,愿意在行权价买入标的。横盘或上涨则保留权利金;暴跌则以高于市价接货。'},
+  bullput:{cn:'牛市认沽价差(贷方)',en:'Bull Put Spread',cat:'inc',view:'温和看涨 · IV 高(收权利金)',
+    legs:()=>[opt('put',-1,100),opt('put',1,85)],
+    note:'卖高行权 Put、买低行权 Put。净收权利金,只要标的不跌破即获利;买入腿把最大亏损封死,比裸卖 Put 安全。'},
+  bearcall:{cn:'熊市认购价差(贷方)',en:'Bear Call Spread',cat:'inc',view:'温和看跌 · IV 高(收权利金)',
+    legs:()=>[opt('call',-1,100),opt('call',1,115)],
+    note:'卖低行权 Call、买高行权 Call。净收权利金,标的不涨破即获利,亏损被买入腿封顶。'},
+  ironcondor:{cn:'铁鹰',en:'Iron Condor',cat:'inc',view:'震荡 · IV 高',
+    legs:()=>[opt('put',1,88),opt('put',-1,95),opt('call',-1,105),opt('call',1,112)],
+    note:'同时卖出一组虚值 Put 价差与 Call 价差。标的停留在中间宽区间时收双边权利金,四腿都有限,是最经典的高胜率收租结构。'},
+  ironbutterfly:{cn:'铁蝶',en:'Iron Butterfly',cat:'inc',view:'震荡 · 区间更窄(IV 高)',
+    legs:()=>[opt('put',1,90),opt('put',-1,100),opt('call',-1,100),opt('call',1,110)],
+    note:'在平值同时卖 Call+Put,两翼各买一张保护。权利金收入比铁鹰高,但获利区间更窄。'},
+  /* ---- Risk-Control ---- */
+  protectiveput:{cn:'保护性认沽',en:'Protective Put',cat:'risk',view:'持股避险 · 给多头买保险',
+    legs:()=>[stk(1),opt('put',1,95)], mp:'∞',
+    note:'持股 + 买 Put 作「保险」。下行被锁定在行权价附近,代价是付权利金、抬高盈亏平衡点。上行随标的不受限。'},
+  collar:{cn:'领口',en:'Collar',cat:'risk',view:'持股避险 · 用卖 Call 补贴保险费',
+    legs:()=>[stk(1),opt('put',1,95),opt('call',-1,110)],
+    note:'持股 + 买 Put + 卖 Call。卖 Call 的权利金抵消买 Put 的成本,可做到近乎零成本保护,代价是放弃 Call 行权价以上的上行。'}
+};
+
+const ORDER={dir:[],vol:[],inc:[],risk:[]};
+Object.keys(DEF).forEach(k=>ORDER[DEF[k].cat].push(k));
+
+/* market × IV  ->  recommended strategy + alternates (from McMillan 总览矩阵) */
+const MX={
+  '强烈看涨|低':{k:'longcall',alt:['LEAPS Call(长期看涨)']},
+  '强烈看涨|高':{k:'bullcall',alt:['Call Backspread(预期突破)']},
+  '温和看涨|低':{k:'coveredcall',alt:['Bull Call Spread']},
+  '温和看涨|高':{k:'bullput',alt:['Covered Call']},
+  '强烈看跌|低':{k:'longput',alt:['LEAPS Put(长期看跌)']},
+  '强烈看跌|高':{k:'bearput',alt:['Put Backspread(预期暴跌)']},
+  '温和看跌|低':{k:'bearput',alt:['Bear Call Spread']},
+  '温和看跌|高':{k:'bearcall',alt:['Bear Put Spread']},
+  '震荡|低':{k:'calendar',alt:['Long Butterfly']},
+  '震荡|高':{k:'ironcondor',alt:['Iron Butterfly','Short Strangle']},
+  '大涨大跌|低':{k:'longstraddle',alt:['Long Strangle','Calendar Spread']},
+  '大涨大跌|高':{k:'callbackspread',alt:['IV 偏贵,买入波动性价比低;可用 Backspread 或等 IV 回落']}
+};
+let mView='强烈看涨', mIV='低';
+
+/* ---- gallery buttons ---- */
+(function(){
+  const g=document.getElementById('gallery'); let html='';
+  ['dir','vol','inc','risk'].forEach(cat=>{
+    html+='<div class="galcat" style="--accent:'+CAT[cat].c+';width:100%">'+CAT[cat].t+'</div>';
+    ORDER[cat].forEach(k=>{ html+='<button data-k="'+k+'">'+DEF[k].en+'</button>'; });
+  });
+  g.innerHTML=html;
+  g.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>show(b.dataset.k)));
+})();
+
+function syncGallery(){
+  document.querySelectorAll('#gallery button').forEach(b=>b.classList.toggle('on',b.dataset.k===curKey));
+}
+
+function show(key){ curKey=key; syncGallery(); render(); }
+
+function updateMatrix(){
+  const rec=MX[mView+'|'+mIV]; const box=document.getElementById('reco');
+  const d=DEF[rec.k];
+  box.innerHTML='<div class="rk">推荐策略 · '+mView+' × IV'+mIV+'</div>'+
+    '<div class="rn">'+d.en+' · '+d.cn+'</div>'+
+    '<div class="rd">'+d.note+'</div>'+
+    (rec.alt&&rec.alt.length?'<div class="ralt">备选 · <b>'+rec.alt.join('</b> / <b>')+'</b></div>':'');
+  show(rec.k);
+}
+
+function render(){
+  const d=DEF[curKey], legs=d.legs();
+  const total=S=>legs.reduce((a,l)=>a+legPL(l,S),0);
+  const a=55,b=145, pts=O.sample(a,b,240,total);
+  // scan wide range for numeric max/min + breakevens
+  let mx=-Infinity,mn=Infinity, bes=[], pv=total(1), ps=1;
+  for(let S=1; S<=260; S+=0.25){
+    const c=total(S);
+    if(c>mx)mx=c; if(c<mn)mn=c;
+    if((pv<0&&c>=0)||(pv>0&&c<=0)) bes.push(ps+(0-pv)/(c-pv)*0.25);
+    pv=c; ps=S;
+  }
+  const net=legs.reduce((s,l)=>s - l.dir*l.qty*l.entry, 0); // +收入 / -成本
+  const mp = d.mp ? d.mp : '+'+O.fmt(mx,2);
+  const ml = d.ml ? d.ml : O.fmt(mn,2);
+  document.getElementById('stratInfo').innerHTML=
+    '<h3 style="margin:0 0 4px">'+d.en+' · '+d.cn+'</h3>'+
+    '<div style="font-size:13px;color:var(--put);font-family:var(--mono);margin-bottom:10px">观点 · '+d.view+'</div>'+
+    '<p class="body" style="font-size:14px;margin:0 0 14px">'+d.note+'</p>'+
+    '<div class="readout">'+
+    '<div class="chip"><div class="k">净成本/收入</div><div class="v mono" style="font-size:18px">'+(net>=0?'+':'')+O.fmt(net,2)+'</div></div>'+
+    '<div class="chip"><div class="k">盈亏平衡</div><div class="v mono" style="font-size:16px">'+(bes.length?bes.map(x=>O.fmt(x,1)).join(' / '):'—')+'</div></div>'+
+    '<div class="chip"><div class="k">最大盈利</div><div class="v mono" style="color:var(--up);font-size:17px">'+mp+'</div></div>'+
+    '<div class="chip"><div class="k">最大亏损</div><div class="v mono" style="color:var(--down);font-size:17px">'+ml+'</div></div>'+
+    '</div>';
+  const vl=[{x:S0,color:'#5aa2ff',label:'S₀',dash:[3,3]}];
+  const seen={};
+  legs.filter(l=>l.kind!=='stock').forEach(l=>{ if(seen[l.K])return; seen[l.K]=1;
+    vl.push({x:l.K,color:l.kind==='call'?'rgba(90,162,255,.5)':'rgba(255,180,84,.5)',label:'K'+l.K,dash:[2,3]}); });
+  O.chart(cv,{height:330,xmin:a,xmax:b,baseline:0,xlabel:'到期标的价 S_T',ylabel:'组合损益',
+    series:[{points:pts,color:'#e0b15e',width:2.6,fill:'rgba(224,177,94,0.08)'}], vlines:vl});
+  let rows='<tr><th>腿</th><th>方向</th><th>类型</th><th>K</th><th>数量</th><th>权利金/成本</th></tr>';
+  legs.forEach((l,i)=>{rows+='<tr><td>'+(i+1)+'</td><td>'+(l.dir>0?'<span class="up">Long</span>':'<span class="down">Short</span>')+'</td><td>'+
+    (l.kind==='stock'?'Stock':l.kind==='call'?'Call'+(l.tRem?'(远月)':''):'Put'+(l.tRem?'(远月)':''))+'</td><td>'+
+    (l.kind==='stock'?'—':l.K)+'</td><td>'+l.qty+'</td><td class="mono">'+O.fmt(l.entry,2)+'</td></tr>';});
+  document.getElementById('legTable').innerHTML=rows;
+}
+
+/* controls */
+O.seg('mView',v=>{mView=v;updateMatrix();});
+O.seg('mIV',v=>{mIV=v;updateMatrix();});
+O.slider('rV','vV',v=>v+'%',v=>{V=v/100;render();});
+O.slider('rT','vT',v=>v+' 天',v=>{T=v;render();});
+O.onResize(render);
+updateMatrix();
+
+/* classify exercise */
+O.classify({root:'classify',items:[
+  {id:'lc',label:'Long Call',bucket:'dir'},
+  {id:'bcs',label:'Bull Call Spread',bucket:'dir'},
+  {id:'lstr',label:'Long Straddle',bucket:'vol'},
+  {id:'cal',label:'Calendar Spread',bucket:'vol'},
+  {id:'cbs',label:'Call Backspread',bucket:'vol'},
+  {id:'cc',label:'Covered Call',bucket:'inc'},
+  {id:'ic',label:'Iron Condor',bucket:'inc'},
+  {id:'np',label:'Naked Put',bucket:'inc'},
+  {id:'pp',label:'Protective Put',bucket:'risk'},
+  {id:'col',label:'Collar',bucket:'risk'}
+]});
+
+O.quiz('quiz',[
+ {q:'你温和看涨,且当前 IV 偏高(权利金贵)。McMillan 框架下更倾向哪类操作?',
+  opts:['买入策略,做多波动率','卖出策略收权利金,如 Bull Put Spread','买入 Long Straddle','纯持有标的'],a:1,
+  e:'IV 高意味着期权贵,应倾向「卖方」。温和看涨 + IV 高 → Bull Put Spread(贷方价差):净收权利金,只要不跌破即获利,且亏损被封顶。'},
+ {q:'Volatility(波动率)家族策略最核心的风险因子是?',
+  opts:['利率与 Rho','Vega 与 Theta','仅标的方向','分红'],a:1,
+  e:'波动率策略交易的是 IV 本身,Vega(对 IV 的敏感度)与 Theta(时间衰减)是关键;方向反而是次要的。'},
+ {q:'关于 Income(收益增强)类策略,下列哪项描述最准确?',
+  opts:['低胜率、收益无限','高胜率、收益有限、存在尾部风险','与卖时间价值无关','只能在 IV 极低时使用'],a:1,
+  e:'收益类策略靠卖出时间价值获利,胜率高但收益有限,且一旦行情极端会面临较大(甚至无限)亏损——黑天鹅风险是其软肋。'},
+ {q:'预期重大事件将引发大幅波动但方向未知,且当前 IV 仍偏低,最契合的是?',
+  opts:['Short Strangle','Long Straddle / Strangle','Covered Call','Bear Call Spread'],a:1,
+  e:'方向不明 + 预期波动放大 + IV 低(期权便宜)→ 买入跨式/宽跨式做多波动率。注意事件落地后的 IV crush 风险。'},
+ {q:'Protective Put 与 Collar 同属哪个家族,核心目的为何?',
+  opts:['Income · 增收','Directional · 押方向','Risk-Control · 保护持仓、降低回撤','Volatility · 押波动'],a:2,
+  e:'两者都是风险控制(Risk-Control):为持有的标的提供下行保护。Collar 进一步用卖出 Call 的权利金补贴买 Put 的成本。'},
+]);
+</script>
+</body>
+</html>
